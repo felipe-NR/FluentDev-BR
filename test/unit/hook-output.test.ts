@@ -3,8 +3,8 @@ import { formatHookOutput } from "../../src/hooks/output.ts";
 
 describe("formatHookOutput", () => {
   it("wraps Codex SessionStart context in its validated JSON shape", () => {
-    expect(formatHookOutput("codex", "session-start", "[english-tutor] Tutor context\nSecond line")).toBe(
-      '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[english-tutor] Tutor context\\nSecond line"}}\n',
+    expect(formatHookOutput("codex", "session-start", "[fluentdev-br] Tutor context\nSecond line")).toBe(
+      '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[fluentdev-br] Tutor context\\nSecond line"}}\n',
     );
   });
 

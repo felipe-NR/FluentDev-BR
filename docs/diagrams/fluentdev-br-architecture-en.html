@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>english-tutor-claudinho · architecture</title>
+  <title>FluentDev-BR · architecture</title>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -80,10 +80,10 @@
 <body>
   <div class="frame">
     <p class="eyebrow">Architecture · Data flow</p>
-    <h1>english-tutor-claudinho — where corrections are stored</h1>
+    <h1>FluentDev-BR: where corrections are stored</h1>
 
     <svg viewBox="0 0 1000 816" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tutor-arch-en-title tutor-arch-en-desc">
-      <title id="tutor-arch-en-title">Architecture of english-tutor-claudinho</title>
+      <title id="tutor-arch-en-title">Architecture of FluentDev-BR</title>
       <desc id="tutor-arch-en-desc">The coding agent applies the correction protocol; hooks and the MCP server write each mistake to corrections.jsonl in the per-OS-user store, from which stats.json and the Markdown report are derived and the session briefing returns to the agent.</desc>
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
@@ -94,7 +94,7 @@
       <!-- STORE zone -->
       <rect x="144" y="452" width="724" height="312" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8" stroke-dasharray="5,4"/>
       <rect x="312" y="456" width="388" height="14" rx="2" fill="#f5f5f5"/>
-      <text x="506" y="466" fill="rgba(45,49,66,0.55)" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">STORE · ~/.english-tutor-claudinho · ONE PER OS USER</text>
+      <text x="506" y="466" fill="rgba(45,49,66,0.55)" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">STORE · ~/.fluentdev-br · ONE PER OS USER</text>
 
       <!-- ============ ARROWS ============ -->
 
@@ -230,8 +230,8 @@
         <p class="eyebrow">Storage</p>
         <div class="card-head"><span class="dot coral"></span><h3>What is stored, and where</h3></div>
         <div class="kv">
-          <b>Location:</b> <span class="path">~/.english-tutor-claudinho/</span><br>
-          fallback <span class="path">$PLUGIN_DATA</span> · override <span class="path">ENGLISH_TUTOR_DATA</span>
+          <b>Location:</b> <span class="path">~/.fluentdev-br/</span><br>
+          fallback <span class="path">$PLUGIN_DATA</span> · override <span class="path">FLUENTDEV_BR_DATA</span>
           <ul>
             <li>Stores only the wrong fragment and its correction (≤ 160 chars)</li>
             <li>Never prompts, code, secrets · no network, no telemetry</li>
@@ -242,7 +242,7 @@
       </div>
     </div>
 
-    <footer>english-tutor-claudinho · Agent Plugins 1.0.0 · diagram generated with diagram-design</footer>
+    <footer>FluentDev-BR · Agent Plugins 1.0.0 · diagram generated with diagram-design</footer>
   </div>
 </body>
 </html>

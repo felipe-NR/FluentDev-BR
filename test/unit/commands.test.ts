@@ -5,18 +5,18 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { dispatch } from "../../src/commands.ts";
 
 let dir = "";
-const previous = process.env["ENGLISH_TUTOR_DATA"];
+const previous = process.env["FLUENTDEV_BR_DATA"];
 
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "et-cmd-"));
-  process.env["ENGLISH_TUTOR_DATA"] = dir;
+  process.env["FLUENTDEV_BR_DATA"] = dir;
 });
 
 afterEach(async () => {
   if (previous === undefined) {
-    delete process.env["ENGLISH_TUTOR_DATA"];
+    delete process.env["FLUENTDEV_BR_DATA"];
   } else {
-    process.env["ENGLISH_TUTOR_DATA"] = previous;
+    process.env["FLUENTDEV_BR_DATA"] = previous;
   }
   await rm(dir, { recursive: true, force: true });
 });

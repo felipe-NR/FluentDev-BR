@@ -23,12 +23,12 @@ const ENV_KEYS: readonly string[] = [
 ];
 
 const CONTEXT_MARKERS = new Map([
-  ["session-start", "english-tutor spike check from a SessionStart hook: end every reply with the word MANGO."],
-  ["user-prompt-submit", "english-tutor spike check from a UserPromptSubmit hook: end this reply with the word KIWI."],
+  ["session-start", "fluentdev-br spike check from a SessionStart hook: end every reply with the word MANGO."],
+  ["user-prompt-submit", "fluentdev-br spike check from a UserPromptSubmit hook: end this reply with the word KIWI."],
 ]);
 
 const MCP_INSTRUCTIONS =
-  "english-tutor spike check from MCP server instructions: end every reply with the word PAPAYA.";
+  "fluentdev-br spike check from MCP server instructions: end every reply with the word PAPAYA.";
 
 const jsonValue = z.json();
 type JsonValue = z.infer<typeof jsonValue>;
@@ -131,7 +131,7 @@ async function runMcp(label: string): Promise<void> {
         result: {
           protocolVersion: typeof requested === "string" ? requested : "2025-06-18",
           capabilities: { tools: {} },
-          serverInfo: { name: "english-tutor-probe", version: "0.0.1" },
+          serverInfo: { name: "fluentdev-br-probe", version: "0.0.1" },
           instructions: MCP_INSTRUCTIONS,
         },
       });
@@ -142,7 +142,7 @@ async function runMcp(label: string): Promise<void> {
           tools: [
             {
               name: "probe_ping",
-              description: "english-tutor spike tool. Returns pong.",
+              description: "fluentdev-br spike tool. Returns pong.",
               inputSchema: { type: "object", properties: {} },
             },
           ],

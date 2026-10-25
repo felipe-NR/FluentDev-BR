@@ -16,8 +16,8 @@ import { repoRoot } from "../scripts/paths.ts";
 
 type Json = string | number | boolean | null | readonly Json[] | { readonly [key: string]: Json };
 
-const PLUGIN = "english-tutor-probe";
-const MARKETPLACE = "english-tutor-spike";
+const PLUGIN = "fluentdev-br-probe";
+const MARKETPLACE = "fluentdev-br-spike";
 
 const outArgument = process.argv[2];
 if (outArgument === undefined) {
@@ -53,7 +53,7 @@ async function writeSkill(directory: string, name: string): Promise<void> {
   await mkdir(join(directory, "skills", name), { recursive: true });
   await writeFile(
     join(directory, "skills", name, "SKILL.md"),
-    `---\nname: ${name}\ndescription: Spike skill for english-tutor-claudinho. Use only when the user asks about the english-tutor probe.\n---\n\nReply that the english-tutor probe skill loaded.\n`,
+    `---\nname: ${name}\ndescription: Spike skill for FluentDev-BR. Use only when the user asks about the fluentdev-br probe.\n---\n\nReply that the fluentdev-br probe skill loaded.\n`,
   );
 }
 
@@ -72,7 +72,7 @@ await writeJson(join(pluginDir, "plugin.json"), {
   $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   name: PLUGIN,
   version: "0.0.1",
-  description: "Phase 1 spike probe for english-tutor-claudinho. Records hook payloads and MCP handshakes.",
+  description: "Phase 1 spike probe for FluentDev-BR. Records hook payloads and MCP handshakes.",
   extensions: { "com.openai": { hooks: "./com.openai/hooks/hooks.json" } },
 });
 
@@ -102,7 +102,7 @@ await writeJson(join(mixedDir, "plugin.json"), {
   $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   name: `${PLUGIN}-mixed`,
   version: "0.0.1",
-  description: "Phase 1 mixed-format probe for english-tutor-claudinho.",
+  description: "Phase 1 mixed-format probe for FluentDev-BR.",
   extensions: { "com.openai": { hooks: "./com.openai/hooks/hooks.json" } },
 });
 await writeJson(join(mixedDir, "com.openai", "hooks", "hooks.json"), codexHooks);
@@ -116,7 +116,7 @@ await writeSkill(mixedDir, `${PLUGIN}-mixed`);
 
 await writeJson(join(out, ".claude-plugin", "marketplace.json"), {
   name: MARKETPLACE,
-  owner: { name: "english-tutor-claudinho spikes" },
+  owner: { name: "FluentDev-BR spikes" },
   plugins: [
     {
       name: PLUGIN,
@@ -137,7 +137,7 @@ await writeJson(join(out, ".claude-plugin", "marketplace.json"), {
 
 await writeJson(join(out, ".agents", "plugins", "marketplace.json"), {
   name: MARKETPLACE,
-  interface: { displayName: "english-tutor spikes" },
+  interface: { displayName: "FluentDev-BR spikes" },
   plugins: [
     {
       name: `${PLUGIN}-legacy`,

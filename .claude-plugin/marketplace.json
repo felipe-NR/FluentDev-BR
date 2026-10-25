@@ -1,16 +1,16 @@
 {
-  "name": "english-tutor-claudinho",
+  "name": "fluentdev-br",
   "owner": {
     "name": "Felipe Neves Ricardo"
   },
   "plugins": [
     {
-      "name": "english-tutor-claudinho",
+      "name": "fluentdev-br",
       "source": "./plugin",
       "strict": false,
       "skills": "./skills/",
       "mcpServers": {
-        "english-tutor": {
+        "fluentdev-br": {
           "command": "node",
           "args": ["${CLAUDE_PLUGIN_ROOT}/dist/tutor.mjs", "mcp"]
         }

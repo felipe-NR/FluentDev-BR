@@ -3,8 +3,8 @@ import { userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const STORE_DIR_NAME = ".english-tutor-claudinho";
-const REFERENCES_SUFFIX = join("skills", "english-tutor", "references");
+const STORE_DIR_NAME = ".fluentdev-br";
+const REFERENCES_SUFFIX = join("skills", "fluentdev-br", "references");
 
 export interface StoreLocation {
   readonly dir: string;
@@ -27,10 +27,10 @@ function isWritable(dir: string): boolean {
 // One store per OS user, resolved through the OS user API instead of a base
 // environment variable, because spec §9.1 forbids depending on those. When the
 // home store is not writable (for example inside a sandbox) the plugin data
-// directory is the fallback. ENGLISH_TUTOR_DATA overrides both; it exists for
+// directory is the fallback. FLUENTDEV_BR_DATA overrides both; it exists for
 // tests and locked-down setups and is never required.
 export function resolveStoreDir(): StoreLocation {
-  const override = process.env["ENGLISH_TUTOR_DATA"];
+  const override = process.env["FLUENTDEV_BR_DATA"];
   if (override !== undefined && override !== "") {
     return { dir: override, origin: "override" };
   }
@@ -45,7 +45,7 @@ export function resolveStoreDir(): StoreLocation {
 
   const pluginData = process.env["PLUGIN_DATA"];
   if (pluginData !== undefined && pluginData !== "") {
-    return { dir: join(pluginData, "english-tutor-claudinho"), origin: "plugin-data" };
+    return { dir: join(pluginData, "fluentdev-br"), origin: "plugin-data" };
   }
 
   throw new Error("no writable store directory: home is not writable and PLUGIN_DATA is unset");

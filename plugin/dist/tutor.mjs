@@ -26979,8 +26979,8 @@ import { accessSync, constants, existsSync, mkdirSync } from "node:fs";
 import { userInfo } from "node:os";
 import { dirname, join as join2 } from "node:path";
 import { fileURLToPath } from "node:url";
-var STORE_DIR_NAME = ".english-tutor-claudinho";
-var REFERENCES_SUFFIX = join2("skills", "english-tutor", "references");
+var STORE_DIR_NAME = ".fluentdev-br";
+var REFERENCES_SUFFIX = join2("skills", "fluentdev-br", "references");
 function isWritable(dir) {
   try {
     mkdirSync(dir, { recursive: true });
@@ -26991,7 +26991,7 @@ function isWritable(dir) {
   }
 }
 function resolveStoreDir() {
-  const override = process.env["ENGLISH_TUTOR_DATA"];
+  const override = process.env["FLUENTDEV_BR_DATA"];
   if (override !== void 0 && override !== "") {
     return { dir: override, origin: "override" };
   }
@@ -27004,7 +27004,7 @@ function resolveStoreDir() {
   }
   const pluginData = process.env["PLUGIN_DATA"];
   if (pluginData !== void 0 && pluginData !== "") {
-    return { dir: join2(pluginData, "english-tutor-claudinho"), origin: "plugin-data" };
+    return { dir: join2(pluginData, "fluentdev-br"), origin: "plugin-data" };
   }
   throw new Error("no writable store directory: home is not writable and PLUGIN_DATA is unset");
 }
@@ -27483,10 +27483,10 @@ var UTF8_BYTES_PER_TOKEN_EQUIVALENT = 4;
 var SESSION_START_SEPARATOR = "\n\n";
 var CORRECTION_MARKER = "\u270F\uFE0F";
 var SESSION_PROTOCOL = [
-  "[english-tutor] Act as my English tutor this session, alongside your normal work.",
+  "[fluentdev-br] Act as my English tutor this session, alongside your normal work.",
   "Evaluate only the prose I write. Ignore code, commands, logs, stack traces, quotes, URLs, paths and pasted text.",
   `When my prose has errors, open your final reply with up to 3 lines, one per mistake: ${CORRECTION_MARKER} [category] "original" \u2192 "correction" (short reason).`,
-  "Use the category IDs from english-tutor://profile/pt-BR. Explanations in English, with a short pt-BR note for false-friend and doubt-question.",
+  "Use the category IDs from fluentdev-br://profile/pt-BR. Explanations in English, with a short pt-BR note for false-friend and doubt-question.",
   "When my prose is correct, say nothing about English. Never put corrections into files, code, commit messages or PR descriptions."
 ].join("\n");
 var SESSION_START_UTF8_BYTE_BUDGET = SESSION_START_TOKEN_EQUIVALENT_BUDGET * UTF8_BYTES_PER_TOKEN_EQUIVALENT;
@@ -27536,10 +27536,10 @@ function buildBriefing(records, limit = DEFAULT_LIMIT, now) {
 }
 function focusLine(focus) {
   if (focus.length === 0) {
-    return "[english-tutor] Apply the correction protocol to this message.";
+    return "[fluentdev-br] Apply the correction protocol to this message.";
   }
   const phrases = focus.map((category) => CATEGORY_FOCUS[category]).join(", ");
-  return `[english-tutor] Apply the correction protocol to this message. Focus: ${phrases}.`;
+  return `[fluentdev-br] Apply the correction protocol to this message. Focus: ${phrases}.`;
 }
 function resolveTrend(total, last7Days, previous7Days) {
   if (total === 0) {
@@ -27555,9 +27555,9 @@ function resolveTrend(total, last7Days, previous7Days) {
 }
 function renderBriefing(total, last7Days, trend, topPatterns, focus) {
   if (total === 0) {
-    return "[english-tutor] No recorded mistakes yet. Corrections start once you write.";
+    return "[fluentdev-br] No recorded mistakes yet. Corrections start once you write.";
   }
-  const header = `[english-tutor] ${String(total)} mistakes recorded, ${String(last7Days)} in the last 7 days (${trend}).`;
+  const header = `[fluentdev-br] ${String(total)} mistakes recorded, ${String(last7Days)} in the last 7 days (${trend}).`;
   const focusText = focusLine(focus);
   const lines = [header];
   if (topPatterns.length > 0) {
@@ -27715,7 +27715,7 @@ function parse4(event, raw) {
 // src/hooks/gates.ts
 import { isAbsolute, relative, resolve } from "node:path";
 function hooksDisabled(prefs, cwd, now = /* @__PURE__ */ new Date()) {
-  if (process.env["ENGLISH_TUTOR_DISABLE"] === "1") {
+  if (process.env["FLUENTDEV_BR_DISABLE"] === "1") {
     return true;
   }
   if (isPaused(prefs.paused_until, now)) {
@@ -37437,7 +37437,7 @@ var INSTRUCTIONS = [
   "English tutor for Brazilian Portuguese speakers.",
   "Use record_corrections to log the English mistakes you correct in the user's messages, one call per message with errors.",
   "Use get_briefing for the main weaknesses, get_report for the Markdown log, set_preferences to adjust behavior, and purge_history to erase records.",
-  "Read english-tutor://protocol for the correction protocol and english-tutor://profile/pt-BR for the category IDs."
+  "Read fluentdev-br://protocol for the correction protocol and fluentdev-br://profile/pt-BR for the category IDs."
 ].join(" ");
 var correctionElement = external_exports.object({
   original: external_exports.string(),
@@ -37447,7 +37447,7 @@ var correctionElement = external_exports.object({
   occurrence_id: external_exports.string().optional()
 });
 function createServer(options) {
-  const server = new McpServer({ name: "english-tutor", version: VERSION }, { instructions: INSTRUCTIONS });
+  const server = new McpServer({ name: "fluentdev-br", version: VERSION }, { instructions: INSTRUCTIONS });
   const { storeDir } = options;
   server.registerTool(
     "record_corrections",
@@ -37558,8 +37558,8 @@ ${JSON.stringify(next, null, 2)}`);
 }
 function registerPrompts(server, storeDir) {
   server.registerPrompt(
-    "english-tutor-on",
-    { title: "English tutor on", description: "Turn on the English tutor for this session." },
+    "fluentdev-br-on",
+    { title: "FluentDev-BR on", description: "Turn on the English tutor for this session." },
     async () => {
       const protocol = await readReference("correction-protocol");
       return {
@@ -37591,19 +37591,19 @@ ${protocol}`
 function registerResources(server, storeDir) {
   server.registerResource(
     "protocol",
-    "english-tutor://protocol",
+    "fluentdev-br://protocol",
     { title: "Correction protocol", description: "What to correct and how.", mimeType: "text/markdown" },
     async (uri) => resource(uri.href, await readReference("correction-protocol"))
   );
   server.registerResource(
     "profile-pt-br",
-    "english-tutor://profile/pt-BR",
+    "fluentdev-br://profile/pt-BR",
     { title: "pt-BR mistake profile", description: "Category IDs and examples.", mimeType: "text/markdown" },
     async (uri) => resource(uri.href, await readReference("l1-pt-br"))
   );
   server.registerResource(
     "report",
-    "english-tutor://report",
+    "fluentdev-br://report",
     { title: "Practice log", description: "The full practice log.", mimeType: "text/markdown" },
     async (uri) => resource(uri.href, renderReport(await readCorrections(storeDir), "all"))
   );

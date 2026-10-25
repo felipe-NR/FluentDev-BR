@@ -27,7 +27,7 @@ Client support observed on 2026-09-13:
 
 Split the tutor into two layers.
 
-1. **Portable core** in the Agent Plugins package `plugin/`: the `english-tutor` skill, the `english-tutor` MCP server and the bundled `tutor` CLI that the server runs. The correction protocol, the pt-BR profile, storage, briefing, reports and review live here.
+1. **Portable core** in the Agent Plugins package `plugin/`: the `fluentdev-br` skill, the `fluentdev-br` MCP server and the bundled `tutor` CLI that the server runs. The correction protocol, the pt-BR profile, storage, briefing, reports and review live here.
 2. **Trigger adapters**, one per client. Each one is declared in distribution metadata outside the package (the Claude Code marketplace entry) or in a generated compatibility package outside `plugin/` (`adapters/codex/` for Codex, see the update below). An adapter calls `tutor hook <client> <event>` and only translates that client's input and output formats.
 
 Clients without per-message injection run in Standard mode: the user turns tutor mode on for the session, and the model records mistakes through an MCP tool. Skills-only clients run in Minimal mode, with on-demand corrections and no history.

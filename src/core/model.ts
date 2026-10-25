@@ -7,7 +7,7 @@ import { isSafeStoredIdentifier, isSafeStoredText } from "./privacy.ts";
 export const MAX_FRAGMENT_LENGTH = 160;
 
 // Stable category IDs from the pt-BR profile
-// (plugin/skills/english-tutor/references/l1-pt-br.md). Never rename an ID once
+// (plugin/skills/fluentdev-br/references/l1-pt-br.md). Never rename an ID once
 // mistakes are recorded against it; the statistics group on it.
 export const CorrectionCategory = z.enum([
   "false-friend",

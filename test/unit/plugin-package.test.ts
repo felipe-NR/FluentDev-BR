@@ -101,11 +101,11 @@ describe("validatePluginPackage", () => {
   it("reports a skill whose frontmatter name does not match its directory", async () => {
     const root = await makePackage({
       "plugin.json": minimalManifest,
-      "skills/tutor/SKILL.md": "---\nname: english-tutor\ndescription: Tutor.\n---\n",
+      "skills/tutor/SKILL.md": "---\nname: fluentdev-br\ndescription: Tutor.\n---\n",
     });
     expect(await validatePluginPackage(root)).toContainEqual({
       path: "skills/tutor/SKILL.md",
-      message: 'frontmatter name "english-tutor" does not match the directory "tutor" (Agent Skills §2)',
+      message: 'frontmatter name "fluentdev-br" does not match the directory "tutor" (Agent Skills §2)',
     });
   });
 

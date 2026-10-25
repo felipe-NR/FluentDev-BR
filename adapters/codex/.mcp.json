@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "english-tutor": {
+    "fluentdev-br": {
       "type": "stdio",
       "command": "node",
       "args": [

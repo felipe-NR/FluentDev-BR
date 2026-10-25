@@ -5,7 +5,7 @@ import type { Preferences } from "../core/preferences.ts";
 // pause turn every hook off; a disabled project turns them off inside that
 // working tree (docs/architecture.md, "CLI and hook rules" and "Preferences").
 export function hooksDisabled(prefs: Preferences, cwd: string, now: Date = new Date()): boolean {
-  if (process.env["ENGLISH_TUTOR_DISABLE"] === "1") {
+  if (process.env["FLUENTDEV_BR_DISABLE"] === "1") {
     return true;
   }
   if (isPaused(prefs.paused_until, now)) {

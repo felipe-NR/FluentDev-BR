@@ -67,7 +67,7 @@ describe("buildBriefing", () => {
     const briefing = buildBriefing(records, 1, now);
     expect(briefing.trend).toBe("up");
     expect(briefing.topPatterns).toHaveLength(1);
-    expect(briefing.text).toContain("[english-tutor]");
+    expect(briefing.text).toContain("[fluentdev-br]");
   });
 
   it("says nothing recorded when the store is empty", () => {
@@ -104,6 +104,6 @@ describe("focusLine", () => {
   });
 
   it("falls back to a bare reminder with no focus", () => {
-    expect(focusLine([])).toBe("[english-tutor] Apply the correction protocol to this message.");
+    expect(focusLine([])).toBe("[fluentdev-br] Apply the correction protocol to this message.");
   });
 });

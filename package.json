@@ -1,5 +1,5 @@
 {
-  "name": "english-tutor-claudinho",
+  "name": "fluentdev-br",
   "version": "0.2.0",
   "private": true,
   "description": "Agent Plugins 1.0.0 plugin that corrects the English in your messages to coding agents. Tuned for Brazilian Portuguese speakers.",
@@ -7,7 +7,7 @@
   "author": "Felipe Neves Ricardo",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/felipe-NR/english-tutor-claudinho.git"
+    "url": "git+https://github.com/felipe-NR/FluentDev-BR.git"
   },
   "type": "module",
   "engines": {

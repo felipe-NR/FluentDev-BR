@@ -38,10 +38,10 @@ export function buildBriefing(records: readonly CorrectionRecord[], limit = DEFA
 // is the reader.
 export function focusLine(focus: readonly CorrectionCategory[]): string {
   if (focus.length === 0) {
-    return "[english-tutor] Apply the correction protocol to this message.";
+    return "[fluentdev-br] Apply the correction protocol to this message.";
   }
   const phrases = focus.map((category) => CATEGORY_FOCUS[category]).join(", ");
-  return `[english-tutor] Apply the correction protocol to this message. Focus: ${phrases}.`;
+  return `[fluentdev-br] Apply the correction protocol to this message. Focus: ${phrases}.`;
 }
 
 function resolveTrend(total: number, last7Days: number, previous7Days: number): Trend {
@@ -65,9 +65,9 @@ function renderBriefing(
   focus: readonly CorrectionCategory[],
 ): string {
   if (total === 0) {
-    return "[english-tutor] No recorded mistakes yet. Corrections start once you write.";
+    return "[fluentdev-br] No recorded mistakes yet. Corrections start once you write.";
   }
-  const header = `[english-tutor] ${String(total)} mistakes recorded, ${String(last7Days)} in the last 7 days (${trend}).`;
+  const header = `[fluentdev-br] ${String(total)} mistakes recorded, ${String(last7Days)} in the last 7 days (${trend}).`;
   const focusText = focusLine(focus);
   const lines = [header];
   if (topPatterns.length > 0) {

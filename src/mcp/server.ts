@@ -17,7 +17,7 @@ const INSTRUCTIONS = [
   "English tutor for Brazilian Portuguese speakers.",
   "Use record_corrections to log the English mistakes you correct in the user's messages, one call per message with errors.",
   "Use get_briefing for the main weaknesses, get_report for the Markdown log, set_preferences to adjust behavior, and purge_history to erase records.",
-  "Read english-tutor://protocol for the correction protocol and english-tutor://profile/pt-BR for the category IDs.",
+  "Read fluentdev-br://protocol for the correction protocol and fluentdev-br://profile/pt-BR for the category IDs.",
 ].join(" ");
 
 const correctionElement = z.object({
@@ -29,7 +29,7 @@ const correctionElement = z.object({
 });
 
 export function createServer(options: ServerOptions): McpServer {
-  const server = new McpServer({ name: "english-tutor", version: VERSION }, { instructions: INSTRUCTIONS });
+  const server = new McpServer({ name: "fluentdev-br", version: VERSION }, { instructions: INSTRUCTIONS });
   const { storeDir } = options;
 
   server.registerTool(
@@ -148,8 +148,8 @@ export function createServer(options: ServerOptions): McpServer {
 
 function registerPrompts(server: McpServer, storeDir: string): void {
   server.registerPrompt(
-    "english-tutor-on",
-    { title: "English tutor on", description: "Turn on the English tutor for this session." },
+    "fluentdev-br-on",
+    { title: "FluentDev-BR on", description: "Turn on the English tutor for this session." },
     async () => {
       const protocol = await readReference("correction-protocol");
       return {
@@ -182,21 +182,21 @@ function registerPrompts(server: McpServer, storeDir: string): void {
 function registerResources(server: McpServer, storeDir: string): void {
   server.registerResource(
     "protocol",
-    "english-tutor://protocol",
+    "fluentdev-br://protocol",
     { title: "Correction protocol", description: "What to correct and how.", mimeType: "text/markdown" },
     async (uri) => resource(uri.href, await readReference("correction-protocol")),
   );
 
   server.registerResource(
     "profile-pt-br",
-    "english-tutor://profile/pt-BR",
+    "fluentdev-br://profile/pt-BR",
     { title: "pt-BR mistake profile", description: "Category IDs and examples.", mimeType: "text/markdown" },
     async (uri) => resource(uri.href, await readReference("l1-pt-br")),
   );
 
   server.registerResource(
     "report",
-    "english-tutor://report",
+    "fluentdev-br://report",
     { title: "Practice log", description: "The full practice log.", mimeType: "text/markdown" },
     async (uri) => resource(uri.href, renderReport(await readCorrections(storeDir), "all")),
   );

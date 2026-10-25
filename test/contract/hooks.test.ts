@@ -34,7 +34,7 @@ const clients: readonly ClientId[] = ["claude-code", "codex"];
 describe.each(clients)("hook adapter: %s", (client) => {
   it("injects the protocol on session start", async () => {
     const out = await runHook(client, "session-start", await fixture(client, "session-start"), dir);
-    expect(out).toContain("[english-tutor] Act as my English tutor");
+    expect(out).toContain("[fluentdev-br] Act as my English tutor");
     expect(out).toContain('"original" → "correction"');
   });
 
@@ -47,7 +47,7 @@ describe.each(clients)("hook adapter: %s", (client) => {
     const payload = await fixture(client, "user-prompt-submit");
     const first = await runHook(client, "user-prompt-submit", payload, dir);
     const second = await runHook(client, "user-prompt-submit", payload, dir);
-    expect(first).toContain("[english-tutor] Apply the correction protocol");
+    expect(first).toContain("[fluentdev-br] Apply the correction protocol");
     expect(first).toContain("[occ:");
     expect(second).toBe("");
   });
@@ -78,17 +78,17 @@ describe.each(clients)("hook adapter: %s", (client) => {
 });
 
 describe("kill switch", () => {
-  const previous = process.env["ENGLISH_TUTOR_DISABLE"];
+  const previous = process.env["FLUENTDEV_BR_DISABLE"];
   afterEach(() => {
     if (previous === undefined) {
-      delete process.env["ENGLISH_TUTOR_DISABLE"];
+      delete process.env["FLUENTDEV_BR_DISABLE"];
     } else {
-      process.env["ENGLISH_TUTOR_DISABLE"] = previous;
+      process.env["FLUENTDEV_BR_DISABLE"] = previous;
     }
   });
 
   it("silences every hook when set", async () => {
-    process.env["ENGLISH_TUTOR_DISABLE"] = "1";
+    process.env["FLUENTDEV_BR_DISABLE"] = "1";
     const events: readonly HookEvent[] = ["session-start", "user-prompt-submit", "stop"];
     for (const event of events) {
       expect(await runHook("claude-code", event, await fixture("claude-code", event), dir)).toBe("");

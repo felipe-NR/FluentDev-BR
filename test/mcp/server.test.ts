@@ -40,7 +40,7 @@ beforeAll(async () => {
     new StdioClientTransport({
       command: process.execPath,
       args: [bundle, "mcp"],
-      env: { ...process.env, ENGLISH_TUTOR_DATA: store },
+      env: { ...process.env, FLUENTDEV_BR_DATA: store },
     }),
   );
 });
@@ -50,14 +50,14 @@ afterAll(async () => {
   await rm(store, { recursive: true, force: true });
 });
 
-describe("english-tutor MCP server", () => {
+describe("fluentdev-br MCP server", () => {
   it("exposes the tools, prompts and resources from the plan", async () => {
     const tools = (await client.listTools()).tools.map((tool) => tool.name).sort();
     expect(tools).toEqual(["get_briefing", "get_report", "purge_history", "record_corrections", "set_preferences"]);
     const prompts = (await client.listPrompts()).prompts.map((prompt) => prompt.name).sort();
-    expect(prompts).toEqual(["english-report", "english-review", "english-tutor-on"]);
+    expect(prompts).toEqual(["english-report", "english-review", "fluentdev-br-on"]);
     const resources = (await client.listResources()).resources.map((resource) => resource.uri).sort();
-    expect(resources).toEqual(["english-tutor://profile/pt-BR", "english-tutor://protocol", "english-tutor://report"]);
+    expect(resources).toEqual(["fluentdev-br://profile/pt-BR", "fluentdev-br://protocol", "fluentdev-br://report"]);
   });
 
   it("records valid corrections and skips a fragment over the limit", async () => {
@@ -78,7 +78,7 @@ describe("english-tutor MCP server", () => {
 
   it("returns a briefing built from the recorded corrections", async () => {
     const result = await callTool(client.callTool({ name: "get_briefing", arguments: {} }));
-    expect(toolText(result)).toContain("[english-tutor]");
+    expect(toolText(result)).toContain("[fluentdev-br]");
     expect(toolText(result)).toContain("preposition");
   });
 
@@ -93,7 +93,7 @@ describe("english-tutor MCP server", () => {
   });
 
   it("serves the protocol resource from the skill references", async () => {
-    const result = resourceResult.parse(await client.readResource({ uri: "english-tutor://protocol" }));
+    const result = resourceResult.parse(await client.readResource({ uri: "fluentdev-br://protocol" }));
     const text = result.contents.map((entry) => entry.text ?? "").join("\n");
     expect(text).toContain("Correction protocol");
   });

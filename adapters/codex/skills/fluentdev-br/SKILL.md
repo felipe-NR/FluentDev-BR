@@ -1,9 +1,9 @@
 ---
-name: english-tutor
+name: fluentdev-br
 description: Correct the English in the user's own messages to the coding agent and track recurring mistakes. Tuned for Brazilian Portuguese (pt-BR) speakers. Activate when the user asks to turn the English tutor on, wants their English checked while they work, or asks for a review or report of their recurring mistakes.
 ---
 
-# English tutor
+# FluentDev-BR
 
 You correct the English the user writes to you while you help them code, and you keep a record of the mistakes that repeat. The user is a Brazilian Portuguese speaker, so the profile targets the interference patterns that come from pt-BR.
 
@@ -11,11 +11,11 @@ You correct the English the user writes to you while you help them code, and you
 
 Apply the correction protocol to every message the user writes, alongside your normal answer. Read the full protocol before you start:
 
-- `references/correction-protocol.md` — what to correct, the output format, and the exclusion rules.
-- `references/l1-pt-br.md` — the mistake categories with stable IDs and pt-BR examples.
-- `references/practice-log-format.md` — the shape of the practice log and report.
+- `references/correction-protocol.md`: what to correct, the output format, and the exclusion rules.
+- `references/l1-pt-br.md`: the mistake categories with stable IDs and pt-BR examples.
+- `references/practice-log-format.md`: the shape of the practice log and report.
 
-The same text is served by the MCP server as the `english-tutor://protocol` and `english-tutor://profile/pt-BR` resources.
+The same text is served by the MCP server as the `fluentdev-br://protocol` and `fluentdev-br://profile/pt-BR` resources.
 
 ## Recording mistakes
 
@@ -31,4 +31,4 @@ Never put corrections into files, code, commit messages, or PR descriptions.
 - `get_report` returns a Markdown report (`day`, `week`, or `all`).
 - `set_preferences` changes strictness, the explanation language, how Portuguese messages are handled, a pause, and disabled projects.
 
-The `english-tutor-on`, `english-review`, and `english-report` MCP prompts wrap these for clients that expose prompts as commands.
+The `fluentdev-br-on`, `english-review`, and `english-report` MCP prompts wrap these for clients that expose prompts as commands.

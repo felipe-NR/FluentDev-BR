@@ -1,11 +1,11 @@
 {
-  "name": "english-tutor-claudinho",
+  "name": "fluentdev-br",
   "interface": {
-    "displayName": "english-tutor-claudinho"
+    "displayName": "FluentDev-BR"
   },
   "plugins": [
     {
-      "name": "english-tutor-claudinho",
+      "name": "fluentdev-br",
       "source": {
         "source": "local",
         "path": "./adapters/codex"

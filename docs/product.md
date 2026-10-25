@@ -1,14 +1,14 @@
-# product.md: english-tutor-claudinho
+# product.md: FluentDev-BR
 
 This file is the single source of product truth: what the plugin adds to a coding agent, for whom, the principles it keeps, the plug-and-play contract and the scope. The current architecture is in `docs/architecture.md`. The tutor behavior and privacy rules that contributors follow are in `AGENTS.md`. The history of the initial plan is in `docs/implementation-plan.md`.
 
 ## What the plugin adds
 
-english-tutor-claudinho is a plugin that adds to a coding agent the ability to also act as an English teacher and tutor for Brazilian Portuguese speakers, by analyzing the messages the user writes. The agent keeps every ability it already has. It answers the coding request as usual, and when the prose in the user's message has English mistakes, it also corrects them, records the mistakes that repeat and reviews them with the user.
+FluentDev-BR is a plugin that adds to a coding agent the ability to also act as an English teacher and tutor for Brazilian Portuguese speakers, by analyzing the messages the user writes. The agent keeps every ability it already has. It answers the coding request as usual, and when the prose in the user's message has English mistakes, it also corrects them, records the mistakes that repeat and reviews them with the user.
 
 ## For whom
 
-Brazilian Portuguese speakers who write to coding agents in English. The mistake categories target the interference patterns that come from pt-BR, such as false friends, prepositions copied from Portuguese and a missing dummy subject ([`l1-pt-br.md`](../plugin/skills/english-tutor/references/l1-pt-br.md)).
+Brazilian Portuguese speakers who write to coding agents in English. The mistake categories target the interference patterns that come from pt-BR, such as false friends, prepositions copied from Portuguese and a missing dummy subject ([`l1-pt-br.md`](../plugin/skills/fluentdev-br/references/l1-pt-br.md)).
 
 ## Principles kept from the reference design
 

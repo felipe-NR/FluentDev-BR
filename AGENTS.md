@@ -2,7 +2,7 @@
 
 ## Project
 
-english-tutor-claudinho is an Agent Plugins 1.0.0 plugin that adds to coding agents the ability to also act as an English tutor, without removing any of their abilities. It analyzes the prose in the user's messages, corrects its English and tracks recurring mistakes. It is tuned for Brazilian Portuguese speakers. `docs/product.md` holds the full product description.
+FluentDev-BR is an Agent Plugins 1.0.0 plugin that adds to coding agents the ability to also act as an English tutor, without removing any of their abilities. It analyzes the prose in the user's messages, corrects its English and tracks recurring mistakes. It is tuned for Brazilian Portuguese speakers. `docs/product.md` holds the full product description.
 
 ## Scope
 
@@ -19,7 +19,7 @@ english-tutor-claudinho is an Agent Plugins 1.0.0 plugin that adds to coding age
 |-|-|
 |Product: what the plugin adds to the coding agent, for whom, plug-and-play contract, scope|`docs/product.md`|
 |Current architecture: layers, modes, CLI, hooks, capture, storage, preferences, context budget, tests|`docs/architecture.md`|
-|Correction protocol text and pt-BR mistake categories|`plugin/skills/english-tutor/references/`|
+|Correction protocol text and pt-BR mistake categories|`plugin/skills/fluentdev-br/references/`|
 |Decisions: reason, status and supersession|`docs/adr/README.md` and the record it links|
 |Verified client behavior|`docs/compatibility.md`|
 |Risks and mitigations|`docs/risks.md`|

@@ -9,7 +9,7 @@ const createdDirectories: string[] = [];
 
 const McpConfig = z.object({
   mcpServers: z.object({
-    "english-tutor": z.object({
+    "fluentdev-br": z.object({
       type: z.literal("stdio"),
       command: z.literal("node"),
       args: z.tuple([z.literal("dist/tutor.mjs"), z.literal("mcp")]),
@@ -24,13 +24,13 @@ afterEach(async () => {
 
 describe("generateCodexAdapter", () => {
   it("launches its MCP server relative to the installed plugin root", async () => {
-    const destination = await mkdtemp(join(tmpdir(), "english-tutor-codex-adapter-"));
+    const destination = await mkdtemp(join(tmpdir(), "fluentdev-br-codex-adapter-"));
     createdDirectories.push(destination);
 
     await generateCodexAdapter(destination);
 
     const config = McpConfig.parse(JSON.parse(await readFile(join(destination, ".mcp.json"), "utf8")));
-    expect(config.mcpServers["english-tutor"]).toEqual({
+    expect(config.mcpServers["fluentdev-br"]).toEqual({
       type: "stdio",
       command: "node",
       args: ["dist/tutor.mjs", "mcp"],

@@ -1,14 +1,14 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "english-tutor-claudinho",
+  "name": "fluentdev-br",
   "version": "0.2.0",
   "description": "Corrects the English in every message you send to your coding agent, tracks recurring mistakes and reviews them with you. Tuned for Brazilian Portuguese speakers.",
   "author": {
     "name": "Felipe Neves Ricardo",
     "url": "https://github.com/felipe-NR"
   },
-  "homepage": "https://github.com/felipe-NR/english-tutor-claudinho",
-  "repository": "https://github.com/felipe-NR/english-tutor-claudinho",
+  "homepage": "https://github.com/felipe-NR/FluentDev-BR",
+  "repository": "https://github.com/felipe-NR/FluentDev-BR",
   "license": "MIT",
   "keywords": ["english", "tutor", "language-learning", "pt-br"]
 }

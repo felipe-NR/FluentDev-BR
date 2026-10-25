@@ -1,16 +1,16 @@
 # architecture.md: current architecture
 
-This file is the single source of the current architecture: layers, modes, repository layout, packaging, the `tutor` CLI, the hooks, capture, storage, preferences, the context budget and the test strategy. It describes the code of release `0.2.0`. Why the architecture looks this way is in `docs/adr/README.md`, what the product promises is in `docs/product.md`, and verified client behavior is in `docs/compatibility.md`. The correction protocol text and the mistake categories live in `plugin/skills/english-tutor/references/`, and this file links to them instead of copying them.
+This file is the single source of the current architecture: layers, modes, repository layout, packaging, the `tutor` CLI, the hooks, capture, storage, preferences, the context budget and the test strategy. It describes the code of release `0.2.0`. Why the architecture looks this way is in `docs/adr/README.md`, what the product promises is in `docs/product.md`, and verified client behavior is in `docs/compatibility.md`. The correction protocol text and the mistake categories live in `plugin/skills/fluentdev-br/references/`, and this file links to them instead of copying them.
 
-![Architecture of english-tutor-claudinho: the coding agent feeds hooks and the MCP server, which write each mistake to corrections.jsonl in the per-OS-user store, from which stats.json and the Markdown report are derived and the session briefing returns to the agent.](diagrams/english-tutor-architecture-en.png)
+![Architecture of FluentDev-BR: the coding agent feeds hooks and the MCP server, which write each mistake to corrections.jsonl in the per-OS-user store, from which stats.json and the Markdown report are derived and the session briefing returns to the agent.](diagrams/fluentdev-br-architecture-en.png)
 
-Diagram sources: [`diagrams/english-tutor-architecture-en.html`](diagrams/english-tutor-architecture-en.html) and `.svg`.
+Diagram sources: [`diagrams/fluentdev-br-architecture-en.html`](diagrams/fluentdev-br-architecture-en.html) and `.svg`.
 
 ## Layers
 
 [ADR-0001](adr/0001-tutor-layers.md) splits the tutor in two layers.
 
-1. **Portable core**, the Agent Plugins package in `plugin/`: the `english-tutor` skill, the `english-tutor` MCP server and the bundled `tutor` CLI that the server runs. The correction protocol, the pt-BR profile, storage, the briefing and the reports live here.
+1. **Portable core**, the Agent Plugins package in `plugin/`: the `fluentdev-br` skill, the `fluentdev-br` MCP server and the bundled `tutor` CLI that the server runs. The correction protocol, the pt-BR profile, storage, the briefing and the reports live here.
 2. **Trigger adapters**, one per client. Each one calls `tutor hook <client> <event>` and only translates that client's input and output. `src/hooks/claude-code.ts` and `src/hooks/codex.ts` normalize the payloads, `src/hooks/runner.ts` runs the behavior against the core, and `src/hooks/output.ts` formats the reply for the client. No pedagogy lives in the hooks.
 
 ## Modes
@@ -53,7 +53,7 @@ sequenceDiagram
 ## Repository layout
 
 ```text
-english-tutor-claudinho/
+FluentDev-BR/
   AGENTS.md                          project rules and documentation routing (canonical)
   CLAUDE.md                          imports AGENTS.md
   README.md
@@ -69,7 +69,7 @@ english-tutor-claudinho/
     hooks/                           client parsers, runner, gates, output formatting
   plugin/                            canonical Agent Plugins 1.0.0 package
     plugin.json, mcp.json, LICENSE, CHANGELOG.md
-    skills/english-tutor/            SKILL.md and references/
+    skills/fluentdev-br/             SKILL.md and references/
     dist/tutor.mjs                   committed bundle
   adapters/codex/                    legacy Codex package generated from plugin/, never edited by hand
   scripts/                           build, Codex adapter generation, bundle check, conformance validator
@@ -122,22 +122,22 @@ Hook rules:
 - A hook never blocks a prompt or a tool call and never uses the network.
 - Synchronous hooks have a p95 budget below 300 ms, not measured yet (`docs/tasks.md`).
 - The reminder goes out once per turn, even when two hook declarations fire: a marker created with an exclusive write in `<store>/state/` claims the turn, and markers expire after one hour.
-- `ENGLISH_TUTOR_DISABLE=1`, an active `paused_until` and a `disabled_projects` entry that contains the working directory silence every hook.
+- `FLUENTDEV_BR_DISABLE=1`, an active `paused_until` and a `disabled_projects` entry that contains the working directory silence every hook.
 
 ## Correction protocol
 
-The protocol text and its rules live in [`references/correction-protocol.md`](../plugin/skills/english-tutor/references/correction-protocol.md). The mechanism around that text:
+The protocol text and its rules live in [`references/correction-protocol.md`](../plugin/skills/fluentdev-br/references/correction-protocol.md). The mechanism around that text:
 
 - **Session start.** The hook injects `SESSION_PROTOCOL` from `src/core/protocol.ts`, a five-line operational form of the protocol, followed by the briefing when the `briefing` preference is on. The runner skips a session start with `source: resume`, because Claude Code replays `SessionStart` on resume and the protocol is already in the transcript. Every other session start, a compaction included, gets the protocol again.
-- **Full text.** The reference text reaches the model through the skill, the `english-tutor://protocol` resource and the `english-tutor-on` prompt. The hook does not inject it.
+- **Full text.** The reference text reaches the model through the skill, the `fluentdev-br://protocol` resource and the `fluentdev-br-on` prompt. The hook does not inject it.
 - **Per message.** The hook injects one reminder line that names up to three focus categories from the recorded history, followed by an `[occ:<id>]` occurrence tag. Context injected by a hook stays in the transcript, which is why the per-message part is a reminder and not the protocol.
 - **Output.** At most 3 lines in the form `✏️ [category] "original" → "correction" (short reason)`, at the top of the final reply. The end-of-turn capture parses the marker and the category ID.
 
 ## pt-BR profile
 
-The categories, with stable IDs and examples, live in [`references/l1-pt-br.md`](../plugin/skills/english-tutor/references/l1-pt-br.md). `src/core/model.ts` holds the same IDs as a closed enum, with a focus phrase for each one. The statistics group on these IDs, so an ID is never renamed once mistakes are recorded against it.
+The categories, with stable IDs and examples, live in [`references/l1-pt-br.md`](../plugin/skills/fluentdev-br/references/l1-pt-br.md). `src/core/model.ts` holds the same IDs as a closed enum, with a focus phrase for each one. The statistics group on these IDs, so an ID is never renamed once mistakes are recorded against it.
 
-The enum, the `english-tutor://profile/pt-BR` resource and the reference names that `src/core/references.ts` accepts are fixed to pt-BR, so another native-language profile needs code changes as well as a new reference file.
+The enum, the `fluentdev-br://profile/pt-BR` resource and the reference names that `src/core/references.ts` accepts are fixed to pt-BR, so another native-language profile needs code changes as well as a new reference file.
 
 ## MCP surface
 
@@ -151,8 +151,8 @@ The enum, the `english-tutor://profile/pt-BR` resource and the reference names t
 | `set_preferences` | any subset of the preferences | validates, merges and stores them |
 | `purge_history` | `confirm: true`, plus `all: true` or a `from`/`to` date range | erases records |
 
-- Prompts, which clients that expose MCP prompts show as commands: `english-tutor-on` sends the full protocol, `english-review` the briefing and `english-report` the full log.
-- Resources: `english-tutor://protocol`, `english-tutor://profile/pt-BR` and `english-tutor://report`. The first two read the skill references at runtime, so the skill stays the single source of the pedagogy.
+- Prompts, which clients that expose MCP prompts show as commands: `fluentdev-br-on` sends the full protocol, `english-review` the briefing and `english-report` the full log.
+- Resources: `fluentdev-br://protocol`, `fluentdev-br://profile/pt-BR` and `fluentdev-br://report`. The first two read the skill references at runtime, so the skill stays the single source of the pedagogy.
 - `instructions`: a short description of the tools and resources. It does not pick a mode from `clientInfo.name`, because the client name does not tell whether a hook is present, trusted or enabled. Whether a model sees the text depends on the client and the model (S3).
 
 ## Hooks per client
@@ -177,9 +177,9 @@ The turn identifier comes from `prompt_id` on Claude Code and from `turn_id` on 
 
 The store is one directory per OS user (D4), resolved in `src/core/paths.ts` in this order:
 
-1. `ENGLISH_TUTOR_DATA`, when set, for tests and locked-down setups.
-2. `~/.english-tutor-claudinho/`, from the OS user API (`os.userInfo().homedir`), when it is writable. Spec §9.1 forbids a server from depending on base environment variables, and the OS user API avoids that dependency.
-3. `$PLUGIN_DATA/english-tutor-claudinho/` otherwise, for example inside a sandbox. A client may delete this directory on uninstall, so this fallback does not keep the history after an uninstall.
+1. `FLUENTDEV_BR_DATA`, when set, for tests and locked-down setups.
+2. `~/.fluentdev-br/`, from the OS user API (`os.userInfo().homedir`), when it is writable. Spec §9.1 forbids a server from depending on base environment variables, and the OS user API avoids that dependency.
+3. `$PLUGIN_DATA/fluentdev-br/` otherwise, for example inside a sandbox. A client may delete this directory on uninstall, so this fallback does not keep the history after an uninstall.
 
 One directory serves every client, so Claude Code and Codex share the history.
 

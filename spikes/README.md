@@ -4,7 +4,7 @@ Throwaway tooling that answers the verification questions in the [implementation
 
 | File | Purpose |
 |-|-|
-| `probe.ts` | Hook recorder and minimal MCP server. Logs payloads, environment variables and store writes to `$TMPDIR/english-tutor-spike/events.jsonl`, and injects marker instructions to show which context reaches the model. |
+| `probe.ts` | Hook recorder and minimal MCP server. Logs payloads, environment variables and store writes to `$TMPDIR/fluentdev-br-spike/events.jsonl`, and injects marker instructions to show which context reaches the model. |
 | `build-probe-marketplace.ts` | Builds canonical, legacy and mixed Codex probe packages, plus a Claude Code marketplace entry (`strict: false`, inline hooks and MCP). |
 | `concurrent-append.ts` | Checks that concurrent JSONL appends from several processes keep every line intact. |
 | `spike-paths.ts` | Log and store locations shared by the probe. |

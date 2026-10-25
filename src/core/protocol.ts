@@ -10,13 +10,13 @@ export const SESSION_START_SEPARATOR = "\n\n";
 export const CORRECTION_MARKER = "✏️";
 
 // A compact operational protocol injected once per session by the hook. The full
-// teaching version is the skill reference and the english-tutor://protocol
+// teaching version is the skill reference and the fluentdev-br://protocol
 // resource; this is the short form that fits the session budget.
 export const SESSION_PROTOCOL = [
-  "[english-tutor] Act as my English tutor this session, alongside your normal work.",
+  "[fluentdev-br] Act as my English tutor this session, alongside your normal work.",
   "Evaluate only the prose I write. Ignore code, commands, logs, stack traces, quotes, URLs, paths and pasted text.",
   `When my prose has errors, open your final reply with up to 3 lines, one per mistake: ${CORRECTION_MARKER} [category] "original" → "correction" (short reason).`,
-  "Use the category IDs from english-tutor://profile/pt-BR. Explanations in English, with a short pt-BR note for false-friend and doubt-question.",
+  "Use the category IDs from fluentdev-br://profile/pt-BR. Explanations in English, with a short pt-BR note for false-friend and doubt-question.",
   "When my prose is correct, say nothing about English. Never put corrections into files, code, commit messages or PR descriptions.",
 ].join("\n");
 

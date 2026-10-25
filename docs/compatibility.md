@@ -23,7 +23,7 @@ Verified through 2026-09-14 with the Phase 1 spikes and an installed-package wir
 
 ## S1: Claude Code
 
-- `claude plugin marketplace add <dir>` and `claude plugin install english-tutor-probe@english-tutor-spike --scope user -y` installed the probe from `./plugin`. `claude plugin details` listed 1 skill, 3 hooks (`SessionStart`, `UserPromptSubmit`, `Stop`) and 1 MCP server.
+- `claude plugin marketplace add <dir>` and `claude plugin install fluentdev-br-probe@fluentdev-br-spike --scope user -y` installed the probe from `./plugin`. `claude plugin details` listed 1 skill, 3 hooks (`SessionStart`, `UserPromptSubmit`, `Stop`) and 1 MCP server.
 - The root `plugin.json` in Agent Plugins format caused no conflict with `strict: false`.
 - The MCP server started from the marketplace entry. Claude Code does not read the Agent Plugins `mcp.json`.
 - A `claude -p` run echoed the markers from `SessionStart`, `UserPromptSubmit` and the MCP `instructions`, so all three reach the model.
@@ -32,7 +32,7 @@ Verified through 2026-09-14 with the Phase 1 spikes and an installed-package wir
 
 ## S2: Codex
 
-- `codex plugin marketplace add <dir>` read `.agents/plugins/marketplace.json` and ignored `.claude-plugin/marketplace.json` in the same directory. `codex plugin add english-tutor-probe@english-tutor-spike` copied the package to `plugins/cache/<marketplace>/<plugin>/<version>/`.
+- `codex plugin marketplace add <dir>` read `.agents/plugins/marketplace.json` and ignored `.claude-plugin/marketplace.json` in the same directory. `codex plugin add fluentdev-br-probe@fluentdev-br-spike` copied the package to `plugins/cache/<marketplace>/<plugin>/<version>/`.
 - Hooks declared for the Agent Plugins package never ran, with or without `--dangerously-bypass-hook-trust`. Five declarations failed the same way: `extensions.com.openai.hooks` as a path to `./com.openai/hooks/hooks.json`, as a path to `./hooks/hooks.json`, as an array of paths, as an inline object, and the default `hooks/hooks.json` with no extension field.
 - The Codex source explains it. [`loader.rs`](https://github.com/openai/codex/blob/6b9826e3aa83b1a5947db50f4332cb9c65f1b340/codex-rs/core-plugins/src/loader.rs#L954-L964) returns no hook sources when the manifest format is `AgentPlugin`. The relevant loader and Agent Plugins manifest blobs are identical in 0.153.4 and 0.154.0. The [OpenAI plugin documentation](https://developers.openai.com/plugins/build/plugins) describes `extensions.com.openai.hooks` for Agent Plugins packages, so the documentation and the implementation disagree.
 - A package with only `.codex-plugin/plugin.json` and `hooks/hooks.json` loaded its hooks. They received `PLUGIN_ROOT`, `PLUGIN_DATA`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`.
@@ -59,9 +59,9 @@ The 0.154.0 request summaries are identical to the 0.153.4 baseline. The MCP ser
 
 ## S5: Live real-model run of release 0.1.0
 
-The S1-S4 spikes used fixed-response servers and called no real model. This section records the first live run of the released `0.1.0` plugin against real models, installed from the GitHub-shorthand marketplace (`felipe-NR/english-tutor-claudinho`, commit `f723a2f`) into an existing profile on 2026-09-13. These are single, non-deterministic observations, not a measured eval; they are Phase 5 input, not a precision or recall number.
+The S1-S4 spikes used fixed-response servers and called no real model. This section records the first live run of the released `0.1.0` plugin against real models, installed from the GitHub-shorthand marketplace (`felipe-NR/FluentDev-BR`, commit `f723a2f`) into an existing profile on 2026-09-13. These are single, non-deterministic observations, not a measured eval; they are Phase 5 input, not a precision or recall number.
 
-Install followed the README verbatim: `claude plugin marketplace add` then `claude plugin install` for Claude Code, and `codex plugin marketplace add` then `codex plugin add` for Codex. Both resolved the GitHub shorthand and the repo-relative sources (`./plugin`; `./adapters/codex` for the Codex hooks). Codex installed the plugin from `adapters/codex`, the legacy package, and `codex mcp list` showed the `english-tutor` MCP server enabled, loaded from its `.mcp.json`.
+Install followed the README verbatim: `claude plugin marketplace add` then `claude plugin install` for Claude Code, and `codex plugin marketplace add` then `codex plugin add` for Codex. Both resolved the GitHub shorthand and the repo-relative sources (`./plugin`; `./adapters/codex` for the Codex hooks). Codex installed the plugin from `adapters/codex`, the legacy package, and `codex mcp list` showed the `fluentdev-br` MCP server enabled, loaded from its `.mcp.json`.
 
 The same English-error message went to both clients: "I have a doubt about promises. Can you explain me how async works? I am developer since 5 years and I still confuse this."
 
@@ -82,8 +82,8 @@ Codex (0.154.0, `gpt-5.6-terra`, `codex exec --dangerously-bypass-hook-trust --s
 
 Codex 0.154.0 reproduced both startup failures from the installed release package.
 
-- The `ai-memory` `SessionStart` and `UserPromptSubmit` hooks exited 0 with empty stdout and stderr. The tutor hooks exited 0 with non-empty text beginning `[english-tutor]`. Controlled hooks showed that alphabetic plain text succeeds while a leading `[` is parsed as JSON and rejected. The event-specific [SessionStart](https://github.com/openai/codex/blob/main/codex-rs/hooks/schema/generated/session-start.command.output.schema.json) and [UserPromptSubmit](https://github.com/openai/codex/blob/main/codex-rs/hooks/schema/generated/user-prompt-submit.command.output.schema.json) JSON envelopes both succeeded.
-- Codex listed `english-tutor` before startup, but `initialize` never completed. Process tracing showed `node` receiving the literal argument `${PLUGIN_ROOT}/dist/tutor.mjs`. The legacy MCP loader roots a relative `cwd` at the installed plugin directory, so `command: "node"`, `args: ["dist/tutor.mjs", "mcp"]`, and `cwd: "."` avoid unsupported placeholder expansion. The corrected launcher completed `get_briefing` calls on Codex 0.153.4 and 0.154.0 in isolated installed-plugin profiles.
+- The `ai-memory` `SessionStart` and `UserPromptSubmit` hooks exited 0 with empty stdout and stderr. The tutor hooks exited 0 with non-empty text beginning `[fluentdev-br]`. Controlled hooks showed that alphabetic plain text succeeds while a leading `[` is parsed as JSON and rejected. The event-specific [SessionStart](https://github.com/openai/codex/blob/main/codex-rs/hooks/schema/generated/session-start.command.output.schema.json) and [UserPromptSubmit](https://github.com/openai/codex/blob/main/codex-rs/hooks/schema/generated/user-prompt-submit.command.output.schema.json) JSON envelopes both succeeded.
+- Codex listed `fluentdev-br` before startup, but `initialize` never completed. Process tracing showed `node` receiving the literal argument `${PLUGIN_ROOT}/dist/tutor.mjs`. The legacy MCP loader roots a relative `cwd` at the installed plugin directory, so `command: "node"`, `args: ["dist/tutor.mjs", "mcp"]`, and `cwd: "."` avoid unsupported placeholder expansion. The corrected launcher completed `get_briefing` calls on Codex 0.153.4 and 0.154.0 in isolated installed-plugin profiles.
 - S5 must be rerun after installing the corrected package. Its recorded Claude result remains valid; its Codex result remains useful only as evidence of the broken release wiring.
 
 `codex exec` printed interleaved `hook: ... Failed` lines, but ai-memory and computer-use also register hooks at those events and the tutor hooks exit 0 with correct output when run standalone, so the failures are not attributable to the tutor without a targeted single-plugin trace.
@@ -113,12 +113,12 @@ For Phase 5: the protocol text that yields strong adherence on Claude Code under
 ```sh
 node spikes/build-probe-marketplace.ts /tmp/probe-marketplace
 CLAUDE_CONFIG_DIR=/tmp/claude-profile claude plugin marketplace add /tmp/probe-marketplace
-CLAUDE_CONFIG_DIR=/tmp/claude-profile claude plugin install english-tutor-probe@english-tutor-spike -y
+CLAUDE_CONFIG_DIR=/tmp/claude-profile claude plugin install fluentdev-br-probe@fluentdev-br-spike -y
 CODEX_HOME=/tmp/codex-profile codex plugin marketplace add /tmp/probe-marketplace
-CODEX_HOME=/tmp/codex-profile codex plugin add english-tutor-probe@english-tutor-spike
-CODEX_HOME=/tmp/codex-profile codex plugin add english-tutor-probe-legacy@english-tutor-spike
-CODEX_HOME=/tmp/codex-profile codex plugin add english-tutor-probe-mixed@english-tutor-spike
+CODEX_HOME=/tmp/codex-profile codex plugin add fluentdev-br-probe@fluentdev-br-spike
+CODEX_HOME=/tmp/codex-profile codex plugin add fluentdev-br-probe-legacy@fluentdev-br-spike
+CODEX_HOME=/tmp/codex-profile codex plugin add fluentdev-br-probe-mixed@fluentdev-br-spike
 node spikes/concurrent-append.ts
 ```
 
-The builder creates canonical (`plugin/`), legacy (`legacy/`) and mixed (`mixed/`) packages. Capture and retain the complete `hooks/list` response for each package, one normal execution and one explicit trust-bypass execution, plus the full first request to a local fixed-response provider for every tested model/tool configuration. The expected 0.154.0 outcomes are in [`spikes/results/codex-0.154.0.json`](../spikes/results/codex-0.154.0.json). The probe appends every event to `$TMPDIR/english-tutor-spike/events.jsonl` and tests writes to `~/.english-tutor-claudinho-spike`. Both profiles need a login before authenticated Claude Code runs; the local Codex provider test does not.
+The builder creates canonical (`plugin/`), legacy (`legacy/`) and mixed (`mixed/`) packages. Capture and retain the complete `hooks/list` response for each package, one normal execution and one explicit trust-bypass execution, plus the full first request to a local fixed-response provider for every tested model/tool configuration. The expected 0.154.0 outcomes are in [`spikes/results/codex-0.154.0.json`](../spikes/results/codex-0.154.0.json). The probe appends every event to `$TMPDIR/fluentdev-br-spike/events.jsonl` and tests writes to `~/.fluentdev-br-spike`. Both profiles need a login before authenticated Claude Code runs; the local Codex provider test does not.

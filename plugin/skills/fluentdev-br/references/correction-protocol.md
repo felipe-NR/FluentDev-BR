@@ -42,7 +42,7 @@ When the prose has no errors, write nothing about English. Silence is the defaul
 Reminder the model receives before a message:
 
 ```
-[english-tutor] Apply the correction protocol to this message. Focus: verb + preposition (depend on), uncountable nouns (information), dummy subject (It is necessary).
+[fluentdev-br] Apply the correction protocol to this message. Focus: verb + preposition (depend on), uncountable nouns (information), dummy subject (It is necessary).
 ```
 
 Message from the user:
