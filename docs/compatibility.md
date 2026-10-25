@@ -90,23 +90,46 @@ Codex 0.154.0 reproduced both startup failures from the installed release packag
 
 For Phase 5: the protocol text that yields strong adherence on Claude Code under-performs on Codex `gpt-5.6-terra`, which is newer than the `gpt-5.4` and `gpt-6-astra` recorded in S3. The eval set and runner should measure Codex separately by model, and the protocol tuning should aim to raise Codex adherence (format and recording) toward the Claude Code baseline. `gpt-5.6-terra` is a new data point beyond the models S3 recorded.
 
+## S8: Antigravity CLI 1.4.7 spike
+
+Recorded on 2026-10-25 using Antigravity CLI (`agy`) 1.4.7 on Linux with Node.js 24.22.1 and `gemini-3.8-flash-low`.
+
+### Component discovery and package format
+
+- `agy plugin validate` requires `hooks.json` at the plugin root. It ignores namespaced hooks such as `extensions["com.google.antigravity"]`.
+- When `plugin.json` declares the Agent Plugins 1.0.0 `$schema`, `agy` loads it as an Agent Plugins package only when the internal feature flag `enable-agent-plugins-spec` is on (off by default in 1.4.7). Until enabled, `mcp.json` is ignored unless `mcp_config.json` also sits at the plugin root.
+- A native plugin manifest without `$schema` loads `hooks.json`, `mcp_config.json`, and `skills/` unconditionally. `agy plugin validate adapters/antigravity --strict` passes with zero findings.
+
+### Hook execution and stdout protocol
+
+- `agy` executes hook commands via `sh -c` with the plugin directory as working directory.
+- `stdout` is parsed as protobuf JSON (`protojson.Unmarshal`). Plain text causes a parse error.
+  - `SessionStart`: `{"injectSteps": [{"systemMessage": {"systemMessage": "<context>"}}]}` injects persistent conversation context.
+  - `PreInvocation`: `{"injectSteps": [{"ephemeralMessage": "<context>"}]}` injects single-invocation context.
+  - `Stop` or empty context: `"{}\n"` satisfies the JSON parser without injecting steps.
+- `SessionStart` fires once per conversation.
+- `PreInvocation` fires before every model invocation of a turn (`invocationNum` starts at 0). Ephemeral messages do not survive subsequent invocations in a tool-calling loop, so emitting the reminder once per invocation ensures the tutor reminder reaches the model when it generates its final answer.
+- `Stop` fires when the turn finishes. In 1.4.7 `finalModelOutput` is omitted when empty, so the adapter reads the final model text from `transcriptPath` when `finalModelOutput` is not populated.
+- In headless mode (`agy -p`), tools require `--dangerously-skip-permissions` to auto-approve tool execution. Live end-to-end execution verified that English mistakes trigger the protocol correction, and the `Stop` hook captures them into the store.
+
 ## Environment variables
 
-| Variable | Claude Code hooks and MCP | Codex MCP (Agent Plugins package) | Codex hooks (legacy package) |
-|-|-|-|-|
-| `PLUGIN_ROOT` | no | yes | yes |
-| `PLUGIN_DATA` | no | yes | yes |
-| `CLAUDE_PLUGIN_ROOT` | yes | no | yes |
-| `CLAUDE_PLUGIN_DATA` | yes | no | yes |
-| `CLAUDE_PROJECT_DIR` | yes | no | no |
+| Variable | Claude Code hooks and MCP | Codex MCP (Agent Plugins package) | Codex hooks (legacy package) | Antigravity CLI hooks | Antigravity CLI MCP |
+|-|-|-|-|-|-|
+| `PLUGIN_ROOT` | no | yes | yes | null (workspace plugin) | yes |
+| `PLUGIN_DATA` | no | yes | yes | null | null |
+| `CLAUDE_PLUGIN_ROOT` | yes | no | yes | no | no |
+| `CLAUDE_PLUGIN_DATA` | yes | no | yes | no | no |
+| `CLAUDE_PROJECT_DIR` | yes | no | no | no | no |
+| `ANTIGRAVITY_CONVERSATION_ID` | no | no | no | yes | yes |
 
 ## Hook payload fields
 
-| Event | Claude Code | Codex |
-|-|-|-|
-| `SessionStart` | `session_id`, `transcript_path`, `cwd`, `hook_event_name`, `source` | adds `model`, `permission_mode` |
-| `UserPromptSubmit` | `session_id`, `transcript_path`, `cwd`, `prompt_id`, `permission_mode`, `hook_event_name`, `prompt` | `session_id`, `turn_id`, `transcript_path`, `cwd`, `hook_event_name`, `model`, `permission_mode`, `prompt` |
-| `Stop` | adds `effort`, `stop_hook_active`, `last_assistant_message`, `background_tasks`, `session_crons` | adds `turn_id`, `model`, `stop_hook_active`, `last_assistant_message` |
+| Event | Claude Code | Codex | Antigravity CLI |
+|-|-|-|-|
+| `SessionStart` | `session_id`, `transcript_path`, `cwd`, `hook_event_name`, `source` | adds `model`, `permission_mode` | `conversationId`, `workspacePaths`, `transcriptPath`, `lastUserInput`, `modelName`, `artifactDirectoryPath` |
+| `UserPromptSubmit` | `session_id`, `transcript_path`, `cwd`, `prompt_id`, `permission_mode`, `hook_event_name`, `prompt` | `session_id`, `turn_id`, `transcript_path`, `cwd`, `hook_event_name`, `model`, `permission_mode`, `prompt` | `conversationId`, `workspacePaths`, `transcriptPath`, `lastUserInput`, `modelName`, `invocationNum`, `initialNumSteps` |
+| `Stop` | adds `effort`, `stop_hook_active`, `last_assistant_message`, `background_tasks`, `session_crons` | adds `turn_id`, `model`, `stop_hook_active`, `last_assistant_message` | `conversationId`, `workspacePaths`, `transcriptPath`, `lastUserInput`, `modelName`, `executionNum`, `fullyIdle`, `terminationReason`, `finalModelOutput` (optional) |
 
 ## Reproduce
 

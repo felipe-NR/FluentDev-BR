@@ -2,7 +2,7 @@
 
 An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) plugin that gives your coding agent the added ability to also act as an English tutor, without removing any of its coding abilities. By analyzing the messages you write, it corrects your English, records the mistakes you repeat and reviews them with you. It is tuned for Brazilian Portuguese speakers and builds on [Luna's Claude Code hooks setup](https://blog.stackademic.com/turning-my-coding-tool-into-an-english-tutor-with-claude-code-hooks-de3384f09b7f).
 
-MVP clients: Claude Code and Codex.
+MVP clients: Claude Code and Codex. Post-MVP: Antigravity CLI.
 
 ## Install
 
@@ -26,6 +26,14 @@ codex plugin add fluentdev-br@fluentdev-br
 
 Codex loads the skill and the MCP server from this package but ignores its hooks, so the message trigger ships as a legacy package under `adapters/codex/` that the same marketplace installs. Codex asks you to trust the plugin's hooks on install; approve it, or the tutor stays silent. In non-interactive `codex exec` runs, hooks are skipped unless you pass `--dangerously-bypass-hook-trust`. See [docs/compatibility.md](docs/compatibility.md) for the client behavior this relies on.
 
+### Antigravity CLI
+
+```sh
+agy plugin install https://github.com/felipe-NR/FluentDev-BR/tree/main/adapters/antigravity
+```
+
+Antigravity CLI loads hooks from `hooks.json` at the plugin root and MCP servers from `mcp_config.json`, which ships as a native package under `adapters/antigravity/` (ADR-0003). In non-interactive `agy -p` runs, tool calls require `--dangerously-skip-permissions`. See [docs/compatibility.md](docs/compatibility.md) for details.
+
 ### Update
 
 Installs stay pinned to the version they were fetched at; they do not auto-update. To move an existing install to the latest release, refresh the marketplace, then update the plugin. Your stored correction history and preferences live in the per-OS-user data store, outside the package, so an update leaves them untouched.
@@ -42,6 +50,12 @@ Codex:
 ```sh
 codex plugin marketplace update fluentdev-br
 codex plugin add fluentdev-br@fluentdev-br
+```
+
+Antigravity CLI:
+
+```sh
+agy plugin update fluentdev-br
 ```
 
 ## Status
@@ -64,10 +78,10 @@ Development requires Node.js 24 (see `.nvmrc`). The bundled CLI runs on Node.js 
 ```sh
 npm ci
 npm run check   # lint, typecheck, tests, plugin conformance, bundle freshness
-npm run build   # rebuild plugin/dist/tutor.mjs and adapters/codex/ after changing src/
+npm run build   # rebuild plugin/dist/tutor.mjs, adapters/codex/ and adapters/antigravity/ after changing src/
 ```
 
-`plugin/dist/tutor.mjs` and the generated `adapters/codex/` are committed because installs from git run no build step, and CI checks both stay in sync with the sources. Rules for contributors and coding agents live in [AGENTS.md](AGENTS.md).
+`plugin/dist/tutor.mjs` and the generated `adapters/codex/` and `adapters/antigravity/` are committed because installs from git run no build step, and CI checks both stay in sync with the sources. Rules for contributors and coding agents live in [AGENTS.md](AGENTS.md).
 
 ## Documentation
 
@@ -84,7 +98,7 @@ npm run build   # rebuild plugin/dist/tutor.mjs and adapters/codex/ after changi
 
 ## Em português
 
-O FluentDev-BR é um plugin que acrescenta ao agente de código a capacidade de também atuar como professor/tutor de inglês para brasileiros, através da análise dos inputs do usuário, sem remover nenhuma das capacidades que o agente já tem. Ele corrige o inglês das mensagens enviadas ao agente e acompanha os erros que se repetem. Instale com dois comandos por cliente (veja **Install** acima): no Claude Code, `claude plugin marketplace add felipe-NR/FluentDev-BR` e depois `claude plugin install fluentdev-br@fluentdev-br`; no Codex, os mesmos passos com `codex`. Esta é a versão `0.2.0`. O [plano de implementação](docs/implementation-plan.md), registro histórico do MVP, está em português, e o [diagrama de arquitetura](docs/diagrams/fluentdev-br-arquitetura.png) também tem versão em português.
+O FluentDev-BR é um plugin que acrescenta ao agente de código a capacidade de também atuar como professor/tutor de inglês para brasileiros, através da análise dos inputs do usuário, sem remover nenhuma das capacidades que o agente já tem. Ele corrige o inglês das mensagens enviadas ao agente e acompanha os erros que se repetem. Instale com dois comandos por cliente (veja **Install** acima): no Claude Code, `claude plugin marketplace add felipe-NR/FluentDev-BR` e depois `claude plugin install fluentdev-br@fluentdev-br`; no Codex, os mesmos passos com `codex`; no Antigravity CLI, `agy plugin install https://github.com/felipe-NR/FluentDev-BR/tree/main/adapters/antigravity`. Esta é a versão `0.2.0`. O [plano de implementação](docs/implementation-plan.md), registro histórico do MVP, está em português, e o [diagrama de arquitetura](docs/diagrams/fluentdev-br-arquitetura.png) também tem versão em português.
 
 ## License
 

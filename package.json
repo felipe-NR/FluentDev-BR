@@ -21,7 +21,8 @@
     "validate:plugin": "node scripts/validate-plugin.ts",
     "check:bundle": "node scripts/check-bundle.ts",
     "check:codex-adapter": "node scripts/check-codex-adapter.ts",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run validate:plugin && npm run check:bundle && npm run check:codex-adapter"
+    "check:antigravity-adapter": "node scripts/check-antigravity-adapter.ts",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run validate:plugin && npm run check:bundle && npm run check:codex-adapter && npm run check:antigravity-adapter"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -11,7 +11,7 @@ Diagram sources: [`diagrams/fluentdev-br-architecture-en.html`](diagrams/fluentd
 [ADR-0001](adr/0001-tutor-layers.md) splits the tutor in two layers.
 
 1. **Portable core**, the Agent Plugins package in `plugin/`: the `fluentdev-br` skill, the `fluentdev-br` MCP server and the bundled `tutor` CLI that the server runs. The correction protocol, the pt-BR profile, storage, the briefing and the reports live here.
-2. **Trigger adapters**, one per client. Each one calls `tutor hook <client> <event>` and only translates that client's input and output. `src/hooks/claude-code.ts` and `src/hooks/codex.ts` normalize the payloads, `src/hooks/runner.ts` runs the behavior against the core, and `src/hooks/output.ts` formats the reply for the client. No pedagogy lives in the hooks.
+2. **Trigger adapters**, one per client. Each one calls `tutor hook <client> <event>` and only translates that client's input and output. `src/hooks/claude-code.ts`, `src/hooks/codex.ts` and `src/hooks/antigravity.ts` normalize the payloads, `src/hooks/runner.ts` runs the behavior against the core, and `src/hooks/output.ts` formats the reply for the client. No pedagogy lives in the hooks.
 
 ## Modes
 
@@ -28,6 +28,8 @@ What each mode gives the user is in `docs/product.md`. The implementation plan a
 | Claude Code | `plugin/` through `.claude-plugin/marketplace.json` | Complete |
 | Codex | `adapters/codex/` through `.agents/plugins/marketplace.json` (D12), after the hook trust review | Complete |
 | Codex | `plugin/` alone | Standard |
+| Antigravity CLI | `adapters/antigravity/` through `agy plugin install` (ADR-0003) | Complete |
+| Antigravity CLI | `plugin/` alone | Minimal |
 
 Flow in Complete mode:
 
@@ -72,7 +74,8 @@ FluentDev-BR/
     skills/fluentdev-br/             SKILL.md and references/
     dist/tutor.mjs                   committed bundle
   adapters/codex/                    legacy Codex package generated from plugin/, never edited by hand
-  scripts/                           build, Codex adapter generation, bundle check, conformance validator
+  adapters/antigravity/              native Antigravity package generated from plugin/, never edited by hand
+  scripts/                           build, adapter generators, bundle check, conformance validator
   vendor/agent-plugins/1.0.0/        official spec schemas
   spikes/                            Phase 1 verification tooling, not shipped
   test/
@@ -86,7 +89,7 @@ Layout rules:
 
 - `plugin/` follows the spec to the letter. A client-specific file goes only into a namespace directory or `extensions` (D3).
 - The marketplaces stay outside the package, because the spec's migration guide classifies marketplaces as distribution metadata.
-- `plugin/dist/` and `adapters/codex/` are build output. `npm run check:bundle` and `npm run check:codex-adapter` keep them in sync with the sources.
+- `plugin/dist/`, `adapters/codex/` and `adapters/antigravity/` are build output. `npm run check:bundle`, `npm run check:codex-adapter` and `npm run check:antigravity-adapter` keep them in sync with the sources.
 
 ## Packaging
 
@@ -101,6 +104,9 @@ The manifests are the source of their own content. This section says what each o
 | `adapters/codex/.mcp.json` | launches `node dist/tutor.mjs mcp` with `cwd: "."`, because the legacy loader roots a relative `cwd` at the installed plugin and leaves `${PLUGIN_ROOT}` in `args` unexpanded (S6, fixed in 0.2.0) |
 | `adapters/codex/hooks/hooks.json` | the three Codex hooks as shell commands with `timeout: 30` |
 | `.agents/plugins/marketplace.json` | Codex marketplace that points to `adapters/codex/` |
+| `adapters/antigravity/plugin.json` | native Antigravity manifest without `$schema`, because Antigravity CLI 1.4.7 treats `$schema` as an Agent Plugins package only while `enable-agent-plugins-spec` is on (S8, ADR-0003) |
+| `adapters/antigravity/mcp_config.json` | launches `node dist/tutor.mjs mcp` over stdio with the plugin directory as working directory |
+| `adapters/antigravity/hooks.json` | the three Antigravity hooks as shell commands with `timeout: 30` |
 
 ## CLI and hook rules
 
@@ -161,8 +167,9 @@ The enum, the `fluentdev-br://profile/pt-BR` resource and the reference names th
 |-|-|-|-|-|-|
 | Claude Code | `SessionStart` | `UserPromptSubmit` | `Stop` with `last_assistant_message`, `async: true` | `.claude-plugin/marketplace.json` | plain text on stdout |
 | Codex | `SessionStart` | `UserPromptSubmit` | `Stop` with `last_assistant_message`, declared without `async` and with `timeout: 30` | `adapters/codex/hooks/hooks.json` (D12) | `hookSpecificOutput.additionalContext` JSON for `SessionStart` and `UserPromptSubmit`, because Codex 0.154.0 parses stdout that starts with `[` as JSON (S6, fixed in 0.2.0) |
+| Antigravity CLI | `SessionStart` | `PreInvocation` | `Stop` with `transcriptPath`, declared with `timeout: 30` | `adapters/antigravity/hooks.json` (ADR-0003) | protojson `injectSteps` for `SessionStart` (`systemMessage`) and `PreInvocation` (`ephemeralMessage`); empty JSON object `{}` for `Stop` and empty output (S8) |
 
-The turn identifier comes from `prompt_id` on Claude Code and from `turn_id` on Codex, with the session ID as the fallback. Codex runs these hooks only after the user trusts them, and `codex exec` skips untrusted hooks without a warning (`docs/compatibility.md`).
+The turn identifier comes from `prompt_id` on Claude Code, from `turn_id` on Codex, and from the step index of the last `USER_INPUT` in the transcript on Antigravity CLI, with the session ID or `lastUserInput` as the fallback. Codex runs these hooks only after the user trusts them, and `codex exec` skips untrusted hooks without a warning (`docs/compatibility.md`). Antigravity CLI parses hook stdout as protobuf JSON and ignores untrusted tool executions in headless runs without `--dangerously-skip-permissions`.
 
 ## Capture
 
@@ -181,7 +188,7 @@ The store is one directory per OS user (D4), resolved in `src/core/paths.ts` in 
 2. `~/.fluentdev-br/`, from the OS user API (`os.userInfo().homedir`), when it is writable. Spec §9.1 forbids a server from depending on base environment variables, and the OS user API avoids that dependency.
 3. `$PLUGIN_DATA/fluentdev-br/` otherwise, for example inside a sandbox. A client may delete this directory on uninstall, so this fallback does not keep the history after an uninstall.
 
-One directory serves every client, so Claude Code and Codex share the history.
+One directory serves every client, so Claude Code, Codex, and Antigravity CLI share the history.
 
 | File | Content |
 |-|-|
@@ -232,11 +239,11 @@ Counting UTF-8 bytes instead of string length keeps multi-byte text inside the s
 
 ## Test strategy
 
-`npm run check` runs lint, typecheck, the tests, the plugin conformance validator and the freshness checks of the bundle and of the Codex adapter. CI runs it on every push to `main` and on every pull request.
+`npm run check` runs lint, typecheck, the tests, the plugin conformance validator and the freshness checks of the bundle, of the Codex adapter and of the Antigravity adapter. CI runs it on every push to `main` and on every pull request.
 
 | Level | What it covers | Where |
 |-|-|-|
-| Unit | store and merge, privacy guard, model, marker parser and occurrence ID, statistics and the briefing ceiling, preferences, state markers, gates, report, CLI and commands, hook output, committed bundle, Codex adapter generation, lint bans | `test/unit/` |
+| Unit | store and merge, privacy guard, model, marker parser and occurrence ID, statistics and the briefing ceiling, preferences, state markers, gates, report, CLI and commands, hook output, committed bundle, Codex adapter generation, Antigravity adapter generation, Antigravity transcript parsing, lint bans | `test/unit/` |
 | Contract | recorded payloads of each client and event against the expected output, including a payload that does not parse and the kill switch | `test/contract/` |
 | Conformance | manifest and `mcp.json` against the vendored schemas, reverse-domain extension keys, client files only in namespace directories, a single-token MCP command, Agent Skills frontmatter, path containment | `npm run validate:plugin`, `test/unit/plugin-package.test.ts` |
 | MCP | the SDK client against `dist/tutor.mjs` over stdio | `test/mcp/` |

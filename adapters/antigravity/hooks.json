@@ -1,0 +1,22 @@
+{
+  "fluentdev-br": {
+    "SessionStart": [
+      {
+        "command": "node dist/tutor.mjs hook antigravity session-start",
+        "timeout": 30
+      }
+    ],
+    "PreInvocation": [
+      {
+        "command": "node dist/tutor.mjs hook antigravity user-prompt-submit",
+        "timeout": 30
+      }
+    ],
+    "Stop": [
+      {
+        "command": "node dist/tutor.mjs hook antigravity stop",
+        "timeout": 30
+      }
+    ]
+  }
+}

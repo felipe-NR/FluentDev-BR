@@ -3836,7 +3836,7 @@ var require_fast_uri = __commonJS({
         normalizeString(uri, options);
       } else if (typeof uri === "object") {
         uri = /** @type {T} */
-        parse5(serialize(uri, options), options);
+        parse6(serialize(uri, options), options);
       }
       return uri;
     }
@@ -3876,8 +3876,8 @@ var require_fast_uri = __commonJS({
     function resolveComponent(base2, relative2, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base2 = parse5(serialize(base2, options), options);
-        relative2 = parse5(serialize(relative2, options), options);
+        base2 = parse6(serialize(base2, options), options);
+        relative2 = parse6(serialize(relative2, options), options);
       }
       options = options || {};
       if (!options.tolerant && relative2.scheme) {
@@ -4175,7 +4175,7 @@ var require_fast_uri = __commonJS({
       }
       return { parsed, malformedAuthorityOrPort, malformedPercentEncoding, malformedSchemeSpecific, malformedHost, malformedScheme };
     }
-    function parse5(uri, opts) {
+    function parse6(uri, opts) {
       return parseWithStatus(uri, opts).parsed;
     }
     function normalizeString(uri, opts) {
@@ -4212,7 +4212,7 @@ var require_fast_uri = __commonJS({
       resolveComponent,
       equal,
       serialize,
-      parse: parse5
+      parse: parse6
     };
     module.exports = fastUri;
     module.exports.default = fastUri;
@@ -9089,18 +9089,18 @@ var validateAsync = async (schema, value, _ctx) => {
   return result2.issues.length === 0;
 };
 var _encode = (_Err) => {
-  const parse5 = _parse(_Err);
+  const parse6 = _parse(_Err);
   const fn = (schema, value, _ctx, _params) => {
     const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
-    return parse5(schema, value, ctx, finalizeParams(fn, _params));
+    return parse6(schema, value, ctx, finalizeParams(fn, _params));
   };
   return fn;
 };
 var encode = /* @__PURE__ */ _encode($ZodRealError);
 var _decode = (_Err) => {
-  const parse5 = _parse(_Err);
+  const parse6 = _parse(_Err);
   const fn = (schema, value, _ctx, _params) => {
-    return parse5(schema, value, _ctx, finalizeParams(fn, _params));
+    return parse6(schema, value, _ctx, finalizeParams(fn, _params));
   };
   return fn;
 };
@@ -27451,7 +27451,20 @@ function delay(ms) {
 
 // src/hooks/output.ts
 function formatHookOutput(client, event, context) {
-  if (client !== "codex" || context === "") {
+  switch (client) {
+    case "claude-code":
+      return context;
+    case "codex":
+      return codexOutput(event, context);
+    case "antigravity":
+      return antigravityOutput(event, context);
+  }
+}
+function emptyHookOutput(client) {
+  return client === "antigravity" ? "{}\n" : "";
+}
+function codexOutput(event, context) {
+  if (context === "") {
     return context;
   }
   const hookEventName = codexContextEventName(event);
@@ -27469,6 +27482,21 @@ function codexContextEventName(event) {
       return "UserPromptSubmit";
     case "stop":
       return void 0;
+  }
+}
+function antigravityOutput(event, context) {
+  if (context === "") {
+    return emptyHookOutput("antigravity");
+  }
+  switch (event) {
+    case "session-start":
+      return `${JSON.stringify({ injectSteps: [{ systemMessage: { systemMessage: context } }] })}
+`;
+    case "user-prompt-submit":
+      return `${JSON.stringify({ injectSteps: [{ ephemeralMessage: context }] })}
+`;
+    case "stop":
+      return emptyHookOutput("antigravity");
   }
 }
 
@@ -27634,8 +27662,138 @@ async function sweep(stateDir) {
   );
 }
 
+// src/hooks/antigravity-transcript.ts
+import { open as open2 } from "node:fs/promises";
+var CHUNK_BYTES = 64 * 1024;
+var MAX_TAIL_BYTES = 16 * 1024 * 1024;
+var TranscriptStep = external_exports.looseObject({
+  step_index: external_exports.number().int().nonnegative(),
+  type: external_exports.string(),
+  content: external_exports.string().optional()
+});
+async function readCurrentTurn(path) {
+  const handle = await open2(path, "r");
+  try {
+    const size = (await handle.stat()).size;
+    let position = size;
+    let tail = Buffer.alloc(0);
+    while (position > 0 && size - position < MAX_TAIL_BYTES) {
+      const length = Math.min(CHUNK_BYTES, position);
+      position -= length;
+      const chunk = Buffer.alloc(length);
+      await handle.read(chunk, 0, length, position);
+      tail = Buffer.concat([chunk, tail]);
+      const turn = findCurrentTurn(tail.toString("utf8"), position === 0);
+      if (turn !== void 0) {
+        return turn;
+      }
+    }
+    return void 0;
+  } finally {
+    await handle.close();
+  }
+}
+function findCurrentTurn(text2, startsAtFileBeginning) {
+  const lines = text2.split("\n");
+  const first = startsAtFileBeginning ? 0 : 1;
+  const responses = [];
+  for (let index = lines.length - 1; index >= first; index -= 1) {
+    const step = parseStep(lines[index] ?? "");
+    if (step === void 0) {
+      continue;
+    }
+    if (step.type === "USER_INPUT") {
+      return { userInputStep: step.step_index, assistantText: responses.reverse().join("\n") };
+    }
+    if (step.type === "PLANNER_RESPONSE" && step.content !== void 0 && step.content !== "") {
+      responses.push(step.content);
+    }
+  }
+  return void 0;
+}
+function parseStep(line) {
+  if (!line.startsWith("{")) {
+    return void 0;
+  }
+  try {
+    const parsed = TranscriptStep.safeParse(JSON.parse(line));
+    return parsed.success ? parsed.data : void 0;
+  } catch {
+    return void 0;
+  }
+}
+
+// src/hooks/antigravity.ts
+var Common = external_exports.looseObject({
+  conversationId: external_exports.string().min(1),
+  workspacePaths: external_exports.array(external_exports.string()).optional(),
+  transcriptPath: external_exports.string().optional(),
+  lastUserInput: external_exports.string().optional()
+});
+var PreInvocation = Common.extend({ invocationNum: external_exports.number().int().nonnegative() });
+var Stop = Common.extend({ finalModelOutput: external_exports.string().optional() });
+async function parse3(event, raw) {
+  switch (event) {
+    case "session-start": {
+      const parsed = Common.safeParse(raw);
+      if (!parsed.success) {
+        return void 0;
+      }
+      return { event, sessionId: parsed.data.conversationId, turn: parsed.data.conversationId, cwd: workspace(parsed.data) };
+    }
+    case "user-prompt-submit": {
+      const parsed = PreInvocation.safeParse(raw);
+      if (!parsed.success) {
+        return void 0;
+      }
+      const transcript = await currentTurn(parsed.data);
+      const base2 = {
+        event,
+        sessionId: parsed.data.conversationId,
+        turn: turnKey(parsed.data, transcript),
+        cwd: workspace(parsed.data),
+        invocation: String(parsed.data.invocationNum)
+      };
+      return parsed.data.lastUserInput === void 0 ? base2 : { ...base2, prompt: parsed.data.lastUserInput };
+    }
+    case "stop": {
+      const parsed = Stop.safeParse(raw);
+      if (!parsed.success) {
+        return void 0;
+      }
+      const transcript = await currentTurn(parsed.data);
+      const base2 = {
+        event,
+        sessionId: parsed.data.conversationId,
+        turn: turnKey(parsed.data, transcript),
+        cwd: workspace(parsed.data)
+      };
+      const message = nonEmpty(parsed.data.finalModelOutput) ?? nonEmpty(transcript?.assistantText);
+      return message === void 0 ? base2 : { ...base2, lastAssistantMessage: message };
+    }
+  }
+}
+function workspace(payload) {
+  return payload.workspacePaths?.[0] ?? process.cwd();
+}
+async function currentTurn(payload) {
+  if (payload.transcriptPath === void 0) {
+    return void 0;
+  }
+  return readCurrentTurn(payload.transcriptPath).catch(() => void 0);
+}
+function turnKey(payload, transcript) {
+  if (transcript !== void 0) {
+    return `step-${String(transcript.userInputStep)}`;
+  }
+  return `input-${payload.lastUserInput ?? ""}`;
+}
+function nonEmpty(value) {
+  return value === void 0 || value === "" ? void 0 : value;
+}
+
 // src/hooks/types.ts
-var ClientId = external_exports.enum(["claude-code", "codex"]);
+var ClientId = external_exports.enum(["claude-code", "codex", "antigravity"]);
 var HookEvent = external_exports.enum(["session-start", "user-prompt-submit", "stop"]);
 var base = external_exports.looseObject({ session_id: external_exports.string(), cwd: external_exports.string() });
 var SessionStartPayload = base.extend({ source: external_exports.string().optional() });
@@ -27651,7 +27809,7 @@ var StopPayload = base.extend({
 });
 
 // src/hooks/claude-code.ts
-function parse3(event, raw) {
+function parse4(event, raw) {
   switch (event) {
     case "session-start": {
       const parsed = SessionStartPayload.safeParse(raw);
@@ -27682,7 +27840,7 @@ function parse3(event, raw) {
 }
 
 // src/hooks/codex.ts
-function parse4(event, raw) {
+function parse5(event, raw) {
   switch (event) {
     case "session-start": {
       const parsed = SessionStartPayload.safeParse(raw);
@@ -27737,8 +27895,9 @@ function contains(project, cwd) {
 
 // src/hooks/runner.ts
 var parsers = {
-  "claude-code": parse3,
-  codex: parse4
+  "claude-code": parse4,
+  codex: parse5,
+  antigravity: parse3
 };
 async function runHook(client, event, payloadText, storeDir, now = /* @__PURE__ */ new Date()) {
   try {
@@ -27746,7 +27905,7 @@ async function runHook(client, event, payloadText, storeDir, now = /* @__PURE__ 
     if (raw === void 0) {
       return "";
     }
-    const input2 = parsers[client](event, raw);
+    const input2 = await parsers[client](event, raw);
     if (input2 === void 0) {
       return "";
     }
@@ -27782,7 +27941,8 @@ ${briefing.text}`;
 }
 async function userPromptSubmit(client, input2, storeDir, now) {
   const occurrence = occurrenceId2(client, input2.sessionId, input2.turn);
-  if (!await claimOnce(storeDir, `reminder-${occurrence}`)) {
+  const claim2 = input2.invocation === void 0 ? occurrence : `${occurrence}-${input2.invocation}`;
+  if (!await claimOnce(storeDir, `reminder-${claim2}`)) {
     return "";
   }
   const briefing = buildBriefing(await readCorrections(storeDir), void 0, now);
@@ -37657,12 +37817,16 @@ async function dispatch(argv2) {
 async function hook(args) {
   const client = ClientId.safeParse(args[0]);
   const event = HookEvent.safeParse(args[1]);
-  if (!client.success || !event.success) {
+  if (!client.success) {
     return { handled: true, exitCode: 0, stdout: "", stderr: "" };
+  }
+  const empty = emptyHookOutput(client.data);
+  if (!event.success) {
+    return { handled: true, exitCode: 0, stdout: empty, stderr: "" };
   }
   const dir = safeStoreDir();
   if (dir === void 0) {
-    return { handled: true, exitCode: 0, stdout: "", stderr: "" };
+    return { handled: true, exitCode: 0, stdout: empty, stderr: "" };
   }
   const payload = await readStream(process.stdin).catch(() => "");
   const context = await runHook(client.data, event.data, payload, dir);

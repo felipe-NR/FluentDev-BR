@@ -21,7 +21,7 @@ The project builds on [Luna's Claude Code hooks setup](https://blog.stackademic.
 | Aspect | Luna (reference) | This project |
 |-|-|-|
 | Speaker | Korean | Brazilian (pt-BR) |
-| Client | Claude Code | Claude Code and Codex in the MVP, other compatible clients later |
+| Client | Claude Code | Claude Code and Codex in the MVP, Antigravity CLI post-MVP, other compatible clients later |
 | Install | manual edit of `~/.claude/settings.json` | each client's native plugin command |
 | Format | loose configuration | Agent Plugins 1.0.0 package |
 | History | Markdown edited by the model | deterministic local record and a generated Markdown report |
@@ -48,7 +48,8 @@ What each mode requires from a client, and which client runs in which mode, is i
 ## Scope
 
 - MVP clients: Claude Code and Codex.
+- Post-MVP clients: Antigravity CLI.
 - Native-language profile: pt-BR.
-- Out of the MVP: graphical interface, cloud sync, telemetry, clients other than Claude Code and Codex, and native-language profiles other than pt-BR.
+- Out of scope: graphical interface, cloud sync, telemetry, and native-language profiles other than pt-BR.
 
 Possibilities after the MVP are in `docs/backlog.md`.
