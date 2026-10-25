@@ -28,7 +28,7 @@ Client support observed on 2026-09-13:
 Split the tutor into two layers.
 
 1. **Portable core** in the Agent Plugins package `plugin/`: the `fluentdev-br` skill, the `fluentdev-br` MCP server and the bundled `tutor` CLI that the server runs. The correction protocol, the pt-BR profile, storage, briefing, reports and review live here.
-2. **Trigger adapters**, one per client. Each one is declared in distribution metadata outside the package (the Claude Code marketplace entry) or in a generated compatibility package outside `plugin/` (`adapters/codex/` for Codex, see the update below). An adapter calls `tutor hook <client> <event>` and only translates that client's input and output formats.
+2. **Trigger adapters**, one per client. Each one is declared in distribution metadata outside the package (the Claude Code marketplace entry) or in a generated compatibility package outside `plugin/` (`adapters/codex/` for Codex, `adapters/antigravity/` for Antigravity CLI; see the updates below). An adapter calls `tutor hook <client> <event>` and only translates that client's input and output formats.
 
 Clients without per-message injection run in Standard mode: the user turns tutor mode on for the session, and the model records mistakes through an MCP tool. Skills-only clients run in Minimal mode, with on-demand corrections and no history.
 
@@ -48,6 +48,10 @@ Clients without per-message injection run in Standard mode: the user turns tutor
 The Phase 1 spikes ([docs/compatibility.md](../compatibility.md)) showed that Codex 0.153.4 never loads hooks from a package with a root `plugin.json`, whatever `extensions.com.openai.hooks` declares. The 0.154.0 recheck repeated the result for canonical, legacy and mixed packages. The Codex loader returns no hook sources for the Agent Plugins manifest format, although the OpenAI documentation describes that field. Codex does load hooks from legacy `.codex-plugin/plugin.json` packages.
 
 Decision D12: the build generates `adapters/codex/`, a legacy Codex package with the same skills, bundle and metadata as `plugin/` plus `hooks/hooks.json`, and the Codex marketplace points to it. `plugin/` stays fully conformant. The adapter goes away when Codex loads hooks from Agent Plugins packages.
+
+## Update 2026-10-25: Antigravity CLI hooks
+
+Spike S8 ([docs/compatibility.md](../compatibility.md)) showed that Antigravity CLI 1.4.7 loads hooks only from `hooks.json` at the plugin root, and loads MCP servers without `enable-agent-plugins-spec` only from `mcp_config.json`. Decision [ADR-0003](0003-antigravity-adapter.md) generates `adapters/antigravity/` as a native Antigravity package outside `plugin/`. It includes `hooks.json`, `mcp_config.json`, the skill, bundle and license. Antigravity CLI runs in Complete mode.
 
 ## Revisit when
 

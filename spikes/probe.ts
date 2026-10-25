@@ -5,7 +5,7 @@
 //   probe hook <client> <event>   read a hook payload on stdin
 //   probe mcp <label>             serve a minimal MCP server over stdio
 
-import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { text } from "node:stream/consumers";
@@ -20,6 +20,7 @@ const ENV_KEYS: readonly string[] = [
   "CLAUDE_PROJECT_DIR",
   "CLAUDE_CONFIG_DIR",
   "CODEX_HOME",
+  "ANTIGRAVITY_CONVERSATION_ID",
 ];
 
 const CONTEXT_MARKERS = new Map([
@@ -88,6 +89,28 @@ function parsePayload(input: string): JsonValue {
   }
 }
 
+// Antigravity CLI hook payloads name the conversation transcript. Record only the
+// type and step index of each step, never its content, to show which steps are
+// already written when each hook fires.
+function transcriptShape(payload: JsonValue): JsonValue {
+  const parsed = z.looseObject({ transcriptPath: z.string() }).safeParse(payload);
+  if (!parsed.success) {
+    return null;
+  }
+  try {
+    const step = z.looseObject({ step_index: z.number(), type: z.string() });
+    return readFileSync(parsed.data.transcriptPath, "utf8")
+      .split("\n")
+      .filter((line) => line.startsWith("{"))
+      .map((line) => {
+        const result = step.safeParse(parsePayload(line));
+        return result.success ? `${String(result.data.step_index)}:${result.data.type}` : "unparsed";
+      });
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "read failed" };
+  }
+}
+
 async function runHook(client: string, event: string): Promise<void> {
   const payload = parsePayload(await text(process.stdin));
   record({
@@ -99,8 +122,25 @@ async function runHook(client: string, event: string): Promise<void> {
     env: environment(),
     storeWrites: storeWrites(),
     payload,
+    transcript: client === "antigravity" ? transcriptShape(payload) : null,
   });
   const marker = CONTEXT_MARKERS.get(event);
+  if (client === "antigravity") {
+    // PROBE_FIRST_INVOCATION_ONLY=1 injects the PreInvocation marker only on
+    // the first model invocation of a turn, to show whether an ephemeral
+    // message survives the tool loop.
+    const firstOnly = process.env["PROBE_FIRST_INVOCATION_ONLY"] === "1";
+    const invocation = z.looseObject({ invocationNum: z.number() }).safeParse(payload);
+    const laterInvocation = invocation.success && invocation.data.invocationNum > 0;
+    if (event === "session-start" && marker !== undefined) {
+      process.stdout.write(`${JSON.stringify({ injectSteps: [{ systemMessage: { systemMessage: marker } }] })}\n`);
+    } else if (event === "user-prompt-submit" && marker !== undefined && !(firstOnly && laterInvocation)) {
+      process.stdout.write(`${JSON.stringify({ injectSteps: [{ ephemeralMessage: marker }] })}\n`);
+    } else {
+      process.stdout.write("{}\n");
+    }
+    return;
+  }
   if (marker !== undefined) {
     process.stdout.write(`${marker}\n`);
   }

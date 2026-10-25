@@ -18,6 +18,7 @@ This directory is the single source of the project's decisions: why each one was
 |-|-|-|-|
 |[ADR-0001](0001-tutor-layers.md)|The tutor lives in the portable core, and hooks only trigger it|Accepted|Layers|
 |[ADR-0002](0002-rename-to-fluentdev-br.md)|Rename the project and plugin to `FluentDev-BR` (`fluentdev-br` for machine identifiers)|Accepted|Naming|
+|[ADR-0003](0003-antigravity-adapter.md)|Antigravity CLI installs a native package generated in `adapters/antigravity/`|Accepted|Clients|
 |[D1](../implementation-plan.md#8-decisões)|MVP clients are Claude Code and Codex; Copilot CLI, VS Code, agy, Cursor and Kiro come after the MVP|Accepted|Scope|
 |[D2](../implementation-plan.md#8-decisões)|The package lives in the `plugin/` subdirectory, so source and tests stay out of the client caches|Accepted|Packaging|
 |[D3](../implementation-plan.md#8-decisões)|The package stays 100% within the spec: client-specific files only in a namespace, in `extensions` or outside the package|Accepted|Packaging|

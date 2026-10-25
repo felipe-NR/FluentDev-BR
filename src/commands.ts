@@ -4,7 +4,7 @@ import { type Preferences, readPreferences, PreferencesUpdate, updatePreferences
 import { resolveReferencesDir, resolveStoreDir } from "./core/paths.ts";
 import { renderReport, ReportPeriod } from "./core/report.ts";
 import { purgeCorrections, readCorrections } from "./core/store.ts";
-import { formatHookOutput } from "./hooks/output.ts";
+import { emptyHookOutput, formatHookOutput } from "./hooks/output.ts";
 import { runHook } from "./hooks/runner.ts";
 import { ClientId, HookEvent } from "./hooks/types.ts";
 import { startStdioServer } from "./mcp/stdio.ts";
@@ -48,12 +48,16 @@ export async function dispatch(argv: readonly string[]): Promise<CommandOutcome>
 async function hook(args: readonly string[]): Promise<CommandOutcome> {
   const client = ClientId.safeParse(args[0]);
   const event = HookEvent.safeParse(args[1]);
-  if (!client.success || !event.success) {
+  if (!client.success) {
     return { handled: true, exitCode: 0, stdout: "", stderr: "" };
+  }
+  const empty = emptyHookOutput(client.data);
+  if (!event.success) {
+    return { handled: true, exitCode: 0, stdout: empty, stderr: "" };
   }
   const dir = safeStoreDir();
   if (dir === undefined) {
-    return { handled: true, exitCode: 0, stdout: "", stderr: "" };
+    return { handled: true, exitCode: 0, stdout: empty, stderr: "" };
   }
   const payload = await readStream(process.stdin).catch(() => "");
   const context = await runHook(client.data, event.data, payload, dir);

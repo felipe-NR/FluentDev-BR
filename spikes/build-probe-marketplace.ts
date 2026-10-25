@@ -5,6 +5,7 @@
 //   <out>/plugin/                           Canonical Agent Plugins 1.0.0 probe package
 //   <out>/legacy/                           Codex legacy probe package
 //   <out>/mixed/                            Root manifest plus legacy overlay probe package
+//   <out>/antigravity/                      Antigravity CLI probe package
 //
 // Usage: node spikes/build-probe-marketplace.ts <out-dir>
 
@@ -27,6 +28,7 @@ const out = resolve(outArgument);
 const pluginDir = join(out, "plugin");
 const legacyDir = join(out, "legacy");
 const mixedDir = join(out, "mixed");
+const antigravityDir = join(out, "antigravity");
 
 async function writeJson(path: string, value: Json): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
@@ -113,6 +115,27 @@ await writeJson(join(mixedDir, ".codex-plugin", "plugin.json"), {
 });
 await writeJson(join(mixedDir, "hooks", "hooks.json"), codexHooks);
 await writeSkill(mixedDir, `${PLUGIN}-mixed`);
+
+await mkdir(join(antigravityDir, "dist"), { recursive: true });
+await copyFile(join(pluginDir, "dist", "probe.mjs"), join(antigravityDir, "dist", "probe.mjs"));
+await writeJson(join(antigravityDir, "plugin.json"), {
+  name: PLUGIN,
+  version: "0.0.1",
+  description: "Antigravity CLI spike probe for FluentDev-BR. Records hook payloads and MCP handshakes.",
+});
+await writeJson(join(antigravityDir, "mcp_config.json"), {
+  mcpServers: {
+    [PLUGIN]: { command: "node", args: ["dist/probe.mjs", "mcp", "antigravity-mcp-config-json"] },
+  },
+});
+await writeJson(join(antigravityDir, "hooks.json"), {
+  [PLUGIN]: {
+    SessionStart: [{ command: "node dist/probe.mjs hook antigravity session-start", timeout: 30 }],
+    PreInvocation: [{ command: "node dist/probe.mjs hook antigravity user-prompt-submit", timeout: 30 }],
+    Stop: [{ command: "node dist/probe.mjs hook antigravity stop", timeout: 30 }],
+  },
+});
+await writeSkill(antigravityDir, PLUGIN);
 
 await writeJson(join(out, ".claude-plugin", "marketplace.json"), {
   name: MARKETPLACE,

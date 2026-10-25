@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
@@ -74,6 +74,72 @@ describe.each(clients)("hook adapter: %s", (client) => {
   it("returns empty output for a malformed payload without throwing", async () => {
     expect(await runHook(client, "user-prompt-submit", "{ not json", dir)).toBe("");
     expect(await runHook(client, "stop", "{}", dir)).toBe("");
+  });
+});
+
+describe("hook adapter: antigravity", () => {
+  const transcriptFixture = fileURLToPath(new URL("./fixtures/antigravity/transcript_full.jsonl", import.meta.url));
+
+  // Point the recorded payload at a transcript the test controls.
+  async function payload(event: string, transcriptPath: string = transcriptFixture): Promise<string> {
+    return withField("antigravity", event, { transcriptPath });
+  }
+
+  async function transcriptWith(reply: string): Promise<string> {
+    const lines = (await readFile(transcriptFixture, "utf8")).trimEnd().split("\n");
+    const last = payloadObject.parse(JSON.parse(lines.at(-1) ?? "{}"));
+    lines[lines.length - 1] = JSON.stringify({ ...last, content: reply });
+    const path = join(dir, "transcript_full.jsonl");
+    await writeFile(path, `${lines.join("\n")}\n`, "utf8");
+    return path;
+  }
+
+  it("injects the protocol on session start", async () => {
+    const out = await runHook("antigravity", "session-start", await fixture("antigravity", "session-start"), dir);
+    expect(out).toContain("[fluentdev-br] Act as my English tutor");
+  });
+
+  it("emits the reminder once per model invocation with one occurrence per turn", async () => {
+    const first = await runHook("antigravity", "user-prompt-submit", await payload("user-prompt-submit"), dir);
+    const repeat = await runHook("antigravity", "user-prompt-submit", await payload("user-prompt-submit"), dir);
+    const loop = await runHook("antigravity", "user-prompt-submit", await payload("user-prompt-submit-tool-loop"), dir);
+    expect(first).toContain("[fluentdev-br] Apply the correction protocol");
+    expect(repeat).toBe("");
+    expect(loop).toContain("[fluentdev-br] Apply the correction protocol");
+    const occTag = /\[occ:[0-9a-f]+\]/;
+    expect(occTag.exec(loop)?.[0]).toBe(occTag.exec(first)?.[0]);
+  });
+
+  it("keys the turn by lastUserInput when the transcript is unreadable", async () => {
+    const missing = join(dir, "missing.jsonl");
+    const first = await runHook("antigravity", "user-prompt-submit", await payload("user-prompt-submit", missing), dir);
+    expect(first).toContain("[occ:");
+  });
+
+  it("captures corrections from the transcript on stop with the reminder's occurrence", async () => {
+    const message = '✏️ [preposition] "it depends of the env" → "it depends on the env" (depend takes on)\nDone.';
+    const path = await transcriptWith(message);
+    const reminder = await runHook("antigravity", "user-prompt-submit", await payload("user-prompt-submit", path), dir);
+    const out = await runHook("antigravity", "stop", await payload("stop", path), dir);
+    expect(out).toBe("");
+    const records = await readCorrections(dir);
+    expect(records).toHaveLength(1);
+    expect(records[0]?.category).toBe("preposition");
+    expect(records[0]?.source).toBe("hook");
+    expect(reminder).toContain(`[occ:${records[0]?.occurrence_id ?? "missing"}]`);
+  });
+
+  it("prefers finalModelOutput when the client sends it", async () => {
+    const message = '✏️ [spelling] "enviroment" → "environment" (spelling)';
+    const raw = payloadObject.parse(JSON.parse(await payload("stop")));
+    await runHook("antigravity", "stop", JSON.stringify({ ...raw, finalModelOutput: message }), dir);
+    await runHook("antigravity", "stop", JSON.stringify({ ...raw, finalModelOutput: message }), dir);
+    expect(await readCorrections(dir)).toHaveLength(1);
+  });
+
+  it("returns empty output for a malformed payload without throwing", async () => {
+    expect(await runHook("antigravity", "user-prompt-submit", "{ not json", dir)).toBe("");
+    expect(await runHook("antigravity", "stop", "{}", dir)).toBe("");
   });
 });
 

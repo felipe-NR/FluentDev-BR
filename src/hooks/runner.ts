@@ -6,14 +6,18 @@ import { readPreferences } from "../core/preferences.ts";
 import { occurrenceId, parseCorrectionLines, SESSION_PROTOCOL } from "../core/protocol.ts";
 import { claimOnce } from "../core/state.ts";
 import { appendCorrection, readCorrections } from "../core/store.ts";
+import * as antigravity from "./antigravity.ts";
 import * as claudeCode from "./claude-code.ts";
 import * as codex from "./codex.ts";
 import { hooksDisabled } from "./gates.ts";
 import { type ClientId, type HookEvent, type HookInput, type JsonValue } from "./types.ts";
 
-const parsers: Record<ClientId, (event: HookEvent, raw: JsonValue) => HookInput | undefined> = {
+type Parser = (event: HookEvent, raw: JsonValue) => HookInput | undefined | Promise<HookInput | undefined>;
+
+const parsers: Record<ClientId, Parser> = {
   "claude-code": claudeCode.parse,
   codex: codex.parse,
+  antigravity: antigravity.parse,
 };
 
 // Run one hook event and return the client's stdout. A hook never breaks a
@@ -31,7 +35,7 @@ export async function runHook(
     if (raw === undefined) {
       return "";
     }
-    const input = parsers[client](event, raw);
+    const input = await parsers[client](event, raw);
     if (input === undefined) {
       return "";
     }
@@ -72,8 +76,11 @@ async function sessionStart(input: HookInput, storeDir: string, briefingOn: bool
 
 async function userPromptSubmit(client: ClientId, input: HookInput, storeDir: string, now: Date): Promise<string> {
   const occurrence = occurrenceId(client, input.sessionId, input.turn);
-  // One reminder per turn, even if two hook declarations fire.
-  if (!(await claimOnce(storeDir, `reminder-${occurrence}`))) {
+  // One reminder per turn, even if two hook declarations fire. A client that
+  // drops injected context after one model invocation gets it once per
+  // invocation, with the same occurrence tag.
+  const claim = input.invocation === undefined ? occurrence : `${occurrence}-${input.invocation}`;
+  if (!(await claimOnce(storeDir, `reminder-${claim}`))) {
     return "";
   }
   const briefing = buildBriefing(await readCorrections(storeDir), undefined, now);

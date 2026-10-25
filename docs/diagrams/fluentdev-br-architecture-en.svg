@@ -77,7 +77,7 @@
       <rect x="384" y="196" width="44" height="12" rx="2" fill="none" stroke="#2d3142" stroke-opacity="0.4" stroke-width="0.8"/>
       <text x="406" y="205" fill="#2d3142" fill-opacity="0.8" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLIENT</text>
       <text x="500" y="228" fill="#2d3142" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Coding agent</text>
-      <text x="500" y="246" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Claude Code · Codex</text>
+      <text x="500" y="246" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Claude Code · Codex · Antigravity CLI</text>
 
       <!-- N2 Hooks -->
       <rect x="88" y="332" width="240" height="84" rx="6" fill="#f5f5f5"/>

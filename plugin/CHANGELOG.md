@@ -2,6 +2,16 @@
 
 All notable changes to this plugin are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Support for Antigravity CLI (`agy`): native adapter package generated in `adapters/antigravity/` with `hooks.json`, `mcp_config.json`, and `plugin.json` without `$schema` (ADR-0003).
+- Trigger adapter for Antigravity CLI (`src/hooks/antigravity.ts` and `src/hooks/antigravity-transcript.ts`): `SessionStart` system message injection, `PreInvocation` ephemeral reminder per invocation, and `Stop` correction capture via conversation transcript parsing.
+- Protobuf JSON hook output formatting for Antigravity CLI (`src/hooks/output.ts`): `injectSteps` for `SessionStart` and `PreInvocation`, and `{}` for silent hooks.
+- Contract fixtures and contract tests for Antigravity CLI (`test/contract/fixtures/antigravity/` and `test/contract/hooks.test.ts`).
+- Freshness check `npm run check:antigravity-adapter` wired into `npm run check`.
+
 ## [0.2.0] - 2026-09-14
 
 ### Added

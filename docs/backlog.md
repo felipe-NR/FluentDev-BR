@@ -15,7 +15,6 @@ The items come from Phase 6 of `docs/implementation-plan.md`. That plan named th
 Each client enters after its own spike. The research done before the spikes is in section 3.4 of `docs/implementation-plan.md`.
 
 - **S7, Copilot CLI and VS Code.** Both would share `com.github.copilot/hooks/hooks.json`, and the adapter would tell them apart by payload shape. The Copilot CLI documentation says it drops the output of file-based `userPromptSubmitted` hooks, so the plan predicted Standard mode for the Copilot CLI and Complete or Standard mode for VS Code.
-- **S8, Antigravity CLI (agy).** `PreInvocation` and `Stop` hooks in a package generated outside the canonical package. The plan predicted Complete mode.
 - **Cursor and Kiro.**
 
 ## Packaging and distribution

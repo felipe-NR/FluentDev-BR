@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "fluentdev-br": {
+      "command": "node",
+      "args": [
+        "dist/tutor.mjs",
+        "mcp"
+      ]
+    }
+  }
+}

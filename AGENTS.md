@@ -6,7 +6,7 @@ FluentDev-BR is an Agent Plugins 1.0.0 plugin that adds to coding agents the abi
 
 ## Scope
 
-- MVP clients: Claude Code and Codex. Copilot CLI, VS Code, Antigravity CLI, Cursor and Kiro come after the MVP, each after its own spike.
+- Supported clients: Claude Code, Codex, and Antigravity CLI. Copilot CLI, VS Code, Cursor and Kiro come after the MVP, each after its own spike.
 - Native-language profile: Brazilian Portuguese (pt-BR).
 
 ## Documentation routing
@@ -61,6 +61,7 @@ FluentDev-BR is an Agent Plugins 1.0.0 plugin that adds to coding agents the abi
 - `plugin/` is the canonical Agent Plugins 1.0.0 package and stays 100% conformant to the spec. It must pass `npm run validate:plugin`.
 - Distribution files for a specific client, such as the Claude Code marketplace in `.claude-plugin/marketplace.json`, live outside `plugin/`.
 - `adapters/codex/` is a legacy Codex package generated from `plugin/`, because Codex ignores hooks in Agent Plugins packages (decision D12, `docs/compatibility.md`). Never edit it by hand.
+- `adapters/antigravity/` is a native Antigravity package generated from `plugin/`, because Antigravity CLI loads hooks only from `hooks.json` at the root (decision ADR-0003, `docs/compatibility.md`). Never edit it by hand.
 - `plugin/dist/` is build output committed to the repository, because installs from git run no build step. Never edit it by hand. CI checks that it matches the sources.
 - Check claims about client behavior against primary documentation or a recorded spike, and record the result in `docs/compatibility.md`.
 
