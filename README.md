@@ -2,7 +2,7 @@
 
 An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) plugin that gives your coding agent the added ability to also act as an English tutor, without removing any of its coding abilities. By analyzing the messages you write, it corrects your English, records the mistakes you repeat and reviews them with you. It is tuned for Brazilian Portuguese speakers and builds on [Luna's Claude Code hooks setup](https://blog.stackademic.com/turning-my-coding-tool-into-an-english-tutor-with-claude-code-hooks-de3384f09b7f).
 
-MVP clients: Claude Code and Codex. Post-MVP: Antigravity CLI.
+Supported clients: Claude Code, Codex and Antigravity CLI.
 
 ## Install
 
